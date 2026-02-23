@@ -15,9 +15,9 @@ urlpatterns = [
 
     path('search/', views.search, name='search'), # Поиск (в верхней части)
 
-    path('tech_station/<int:id>', views.open_tech_station, name='open_tech_station'),
-    path('evacuator/<int:id>', views.open_evacuator, name='open_evacuator'),
-    path('tire_service/<int:id>', views.open_tire_service, name='open_tire_service'),
+    path('tech_station/<int:id>/', views.open_tech_station, name='open_tech_station'),
+    path('evacuator/<int:id>/', views.open_evacuator, name='open_evacuator'),
+    path('tire_service/<int:id>/', views.open_tire_service, name='open_tire_service'),
 
     path('tech_station/rating/<rating:rating>/', views.rating, name='tech_station_rating'),
     path('evacuator/rating/<rating:rating>/', views.rating, name='evacuator_rating'),

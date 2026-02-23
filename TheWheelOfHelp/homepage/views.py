@@ -16,8 +16,8 @@ def technical_service_station(request):
 
 
 def evacuator(request):
-    name = request.GET.get('name')
-    return HttpResponse(f'Эвакуаторы и {name}')
+    name = request.GET.get('name', ' ')
+    return HttpResponse(f'Эвакуаторы {name}')
 
 
 def tire_service(request):
@@ -50,7 +50,6 @@ def rating(request, rating):
     elif rating >= 2.0:
         category = "Средний"
     else:
-        category = "Плохой" # Edit this
+        category = "Плохой"
 
     return HttpResponse(f"<h1>{category}<h1>")
-
