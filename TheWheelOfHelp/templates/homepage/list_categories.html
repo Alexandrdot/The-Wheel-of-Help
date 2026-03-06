@@ -1,0 +1,23 @@
+{% if categories %}
+<ul class="leftchapters">
+    <li{% if not selected_cat_id %} class="selected"{% endif %}>
+        <a href="{% url 'homepage:index' %}">Все категории</a>
+    </li>
+    
+    {% for cat in categories %}
+    <li{% if cat.id == selected_cat_id %} class="selected"{% endif %}>
+        <a href="{% url 'homepage:'|add:cat.url %}">
+            {{ cat.name }}
+            {% if cat.count %}
+            <span class="category-count">({{ cat.count }})</span>
+            {% endif %}
+        </a>
+    </li>
+    {% endfor %}
+    
+    <li class="share">
+        <p>Наш канал</p>
+        <a class="share-yt" href="https://youtube.com/@thewheelofhelp" target="_blank" rel="nofollow"></a>
+    </li>
+</ul>
+{% endif %}

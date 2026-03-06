@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+{% load static %}
+{% load homepage_tags %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{title}}{% endblock %}</title>
+    <link type="text/css" href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <table class="table-page" border=0 cellpadding="0" cellspacing="0">
+        <tr>
+            <!-- Левая боковая панель с категориями -->
+            <td valign="top" class="left-chapters">
+                {% show_categories %}
+            </td>
+            <td valign=top>
+                {% block header %}
+                    {% include 'includes/header.html' %}
+                {% endblock %}
+
+                <table class="table-content" border=0 cellpadding="0" cellspacing="0">
+                    <tr>
+                        <!-- Левое меню (категории услуг) -->
+                        <td valign="top" class="left-chapters">
+                            
+                        </td>
+
+                        <!-- Основной контент -->
+                        <td valign="top" class="content">
+                            {% block breadcrumbs %}
+                            <ul class="breadcrumbs">
+                                <li><a href="{% url 'homepage:index' %}">Главная</a></li>
+                                {% block extra_breadcrumbs %}{% endblock %}
+                            </ul>
+                            {% endblock %}
+
+                            <!-- Блок для сообщений -->
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            <div class="content-text">
+                                {% block content %}
+                                {% endblock %}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                {% block footer %}
+                    {% include 'includes/footer.html' %}
+                {% endblock %}
+            </td>
+        </tr>
+    </table>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load homepage_tags %}
+
+{% block title %}СТО #{{ id }} - TheWheelOfHelp{% endblock %}
+
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+    <li><a href="{% url 'homepage:index' %}">Главная</a></li>
+    <li><a href="{% url 'homepage:tech_station' %}">СТО</a></li>
+    <li class="last">СТО #{{ id }}</li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<h1>СТО #{{ id }}</h1>
+
+<div class="service-detail">
+    <!-- Пример данных для конкретного СТО -->
+    <h2>Автосервис "Профи"</h2>
+    
+    <div class="rating-box">
+        <h3>Рейтинг: {% get_stars 4.5 %} (4.5)</h3>
+        <p>Категория: {% format_rating 4.5 %}</p>
+    </div>
+    
+    <div class="info-box">
+        <h3>Контактная информация</h3>
+        <p><strong>Адрес:</strong> ул. Ленина, 10</p>
+        <p><strong>Телефон:</strong> +7 (999) 111-22-33</p>
+        <p><strong>Email:</strong> info@profiauto.ru</p>
+        <p><strong>Время работы:</strong> 09:00 - 21:00 (без выходных)</p>
+    </div>
+    
+    <div class="info-box">
+        <h3>Услуги и цены</h3>
+        <ul>
+            <li>Диагностика - от 1000 руб.</li>
+            <li>Замена масла - от 1500 руб.</li>
+            <li>Ремонт ходовой части - от 3000 руб.</li>
+            <li>Ремонт двигателя - от 5000 руб.</li>
+        </ul>
+    </div>
+    
+    <div class="info-box">
+        <h3>Описание</h3>
+        <p>Профессиональный автосервис с многолетним опытом работы. Современное оборудование, квалифицированные мастера. Гарантия на все виды работ.</p>
+    </div>
+</div>
+
+<!-- Навигация -->
+<ul class="control">
+    <li class="first"><a href="{% url 'homepage:tech_station' %}">← Вернуться к списку</a></li>
+</ul>
+{% endblock %}

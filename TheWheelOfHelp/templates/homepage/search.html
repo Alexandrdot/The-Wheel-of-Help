@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load homepage_tags %}
+
+{% block title %}Поиск - TheWheelOfHelp{% endblock %}
+
+{% block breadcrumbs %}
+<ul class="breadcrumbs">
+    <li><a href="{% url 'homepage:index' %}">Главная</a></li>
+    <li class="last">Поиск</li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<h1>Результаты поиска</h1>
+
+<p>По вашему запросу найдено: {{ results|length }}</p>
+
+<ul class="list-articles">
+    {% for result in results %}
+    <li>
+        <h2><a href="{{ result.url }}">{{ result.title }}</a></h2>
+        <p>{{ result.description|truncate_text:150 }}</p>
+        <div class="article-panel">
+            <p class="first">Рейтинг: {% get_stars result.rating %}</p>
+            <p class="last">{{ result.address }}</p>
+        </div>
+    </li>
+    {% empty %}
+    <li>Ничего не найдено. Попробуйте изменить запрос.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
