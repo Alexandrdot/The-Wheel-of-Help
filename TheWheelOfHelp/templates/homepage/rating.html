@@ -1,50 +1,35 @@
 {% extends 'base.html' %}
 {% load homepage_tags %}
 
-{% block title %}Рейтинг: {{ category_name }} - TheWheelOfHelp{% endblock %}
-
-{% block breadcrumbs %}
-<ul class="breadcrumbs">
-    <li><a href="{% url 'homepage:index' %}">Главная</a></li>
-    {% comment %} <li><a href="{% url service_url %}">{{ service_name }}</a></li> {% endcomment %}
-    <li class="last">Рейтинг: {{ rating }}+</li>
-</ul>
-{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<h1>{{ service_name }} с рейтингом {{ rating }}+</h1>
-<h2>Категория: {{ rating_category }}</h2>
+<h1>{{ title }}</h1>
+<p class="rating-category">Категория: <strong>{{ rating_text }}</strong> (рейтинг ≥ {{ rating }})</p>
 
 <ul class="list-articles">
-    <!-- Пример данных для отфильтрованных по рейтингу -->
+    {% for service in services %}
     <li>
-        <h2><a href="#">Автосервис "Профи"</a></h2>
+        <h2><a href="{{ service.get_absolute_url }}">{{ service.title }}</a></h2>
+        <p>{{ service.description|truncatewords:30 }}</p>
+        
         <div class="article-panel">
             <p class="first">
-                Рейтинг: {% get_stars 4.9 %} (4.9)
+                Рейтинг: {% get_stars service.rating %} ({{ service.rating }})
             </p>
             <p class="last">
-                Адрес: ул. Ленина, 10
+                {{ service.address }}
             </p>
         </div>
+        
         <p class="link-read-post">
-            <a href="#">Подробнее</a>
+            <a href="{{ service.get_absolute_url }}">Подробнее</a>
         </p>
     </li>
-    
-    <li>
-        <h2><a href="#">Автосервис "Мастер"</a></h2>
-        <div class="article-panel">
-            <p class="first">
-                Рейтинг: {% get_stars 4.8 %} (4.8)
-            </p>
-            <p class="last">
-                Адрес: ул. Гагарина, 5
-            </p>
-        </div>
-        <p class="link-read-post">
-            <a href="#">Подробнее</a>
-        </p>
-    </li>
+    {% empty %}
+    <li>Услуг с таким рейтингом не найдено</li>
+    {% endfor %}
 </ul>
+
+<p><a href="{% url 'homepage:index' %}">← На главную</a></p>
 {% endblock %}

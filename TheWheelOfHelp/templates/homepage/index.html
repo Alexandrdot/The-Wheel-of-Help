@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load homepage_tags %}
 
-{% block title %}{{title}}{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
 <h1>{{ title|default:"Добро пожаловать в TheWheelOfHelp"|capfirst }}</h1>
@@ -13,13 +13,12 @@
 <h2>Популярные услуги</h2>
 
 <div class="services-grid">
-    {% get_categories as cats %}
-    {% for cat in cats %}
+    {% for cat in categories %}
     <div class="service-card">
-        <h3><a href="{% url 'homepage:'|add:cat.url %}">{{ cat.name }}</a></h3>
-        <p>Доступно услуг: {{ cat.count }}</p>
+        <h3><a href="{% url 'homepage:category_detail' cat.slug %}">{{ cat.name }}</a></h3>
+        <p>Доступно услуг: {{ cat.services.count }}</p>
         <p class="link-read-post">
-            <a href="{% url 'homepage:'|add:cat.url %}">Перейти →</a>
+            <a href="{% url 'homepage:category_detail' cat.slug %}">Перейти →</a>
         </p>
     </div>
     {% endfor %}
@@ -28,37 +27,30 @@
 <h2>Последние добавленные</h2>
 
 <ul class="list-articles">
-    <!-- Пример данных (замените на реальные из БД) -->
+    {% for service in services %}
     <li>
-        <h2><a href="{% url 'homepage:open_tech_station' 1 %}">Автосервис "Профи"</a></h2>
-        <p>Ремонт двигателей, ходовой части, диагностика...</p>
+        <h2>
+            <a href="{{ service.get_absolute_url }}">
+                {{ service.title }}
+            </a>
+        </h2>
+        <p>{{ service.description|truncatewords:30 }}</p>
+        
         <div class="article-panel">
             <p class="first">
-                Рейтинг: {% get_stars 4.5 %} (4.5)
+                Рейтинг: {% get_stars service.rating %} ({{ service.rating }})
             </p>
             <p class="last">
-                Адрес: ул. Ленина, 10
+                {{ service.address }}
             </p>
         </div>
+        
         <p class="link-read-post">
-            <a href="{% url 'homepage:open_tech_station' 1 %}">Подробнее</a>
+            <a href="{{ service.get_absolute_url }}">Подробнее</a>
         </p>
     </li>
-    
-    <li>
-        <h2><a href="{% url 'homepage:open_evacuator' 2 %}">Эвакуатор 24/7</a></h2>
-        <p>Круглосуточная эвакуация легковых и грузовых авто...</p>
-        <div class="article-panel">
-            <p class="first">
-                Рейтинг: {% get_stars 4.8 %} (4.8)
-            </p>
-            <p class="last">
-                Цена: от 1000 руб.
-            </p>
-        </div>
-        <p class="link-read-post">
-            <a href="{% url 'homepage:open_evacuator' 2 %}">Подробнее</a>
-        </p>
-    </li>
+    {% empty %}
+    <li>Пока нет добавленных услуг</li>
+    {% endfor %}
 </ul>
 {% endblock %}
