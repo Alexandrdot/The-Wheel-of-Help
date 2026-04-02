@@ -1,0 +1,45 @@
+<ul id="leftchapters">
+    {% if selected_cat_id == 0 %}
+        <li class="selected">Все категории</li>
+    {% else %}
+        <li><a href="{% url 'homepage:index' %}">Все категории</a></li>
+    {% endif %}
+
+    {% for cat in categories %}
+        {% if cat.id == selected_cat_id %}
+            <li class="selected">{{ cat.name }}</li>
+        {% else %}
+            <li><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
+        {% endif %}
+    {% endfor %}
+    
+    <!-- Блок фильтрации по рейтингу -->
+    <li class="rating-filter">
+        <p>Рейтинг:</p>
+            <li>
+                {% if current_rating %}
+                    <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=" class="clear-filter">✖ Сбросить</a>
+                {% endif %}
+            </li>
+            <li>
+                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=4.8" {% if current_rating == 4.8 %}class="active"{% endif %}>
+                    5.0 ⭐⭐⭐⭐⭐
+                </a>
+            </li>
+            <li>
+                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=4.0" {% if current_rating == 4.0 %}class="active"{% endif %}>
+                    4.0+ ⭐⭐⭐⭐
+                </a>
+            </li>
+            <li>
+                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=3.0" {% if current_rating == 3.0 %}class="active"{% endif %}>
+                    3.0+ ⭐⭐⭐
+                </a>
+            </li>
+            <li>
+                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=2.0" {% if current_rating == 2.0 %}class="active"{% endif %}>
+                    2.0+ ⭐⭐
+                </a>
+            </li>
+    </li>
+</ul>

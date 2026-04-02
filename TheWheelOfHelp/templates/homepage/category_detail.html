@@ -1,78 +1,32 @@
 {% extends 'base.html' %}
-{% load homepage_tags %}
-
-{% block title %}{{ category.name }} - TheWheelOfHelp{% endblock %}
-
-{% block breadcrumbs %}
-<ul class="breadcrumbs">
-    <li><a href="{% url 'homepage:index' %}">Главная</a></li>
-    <li class="last">{{ category.name }}</li>
-</ul>
-{% endblock %}
 
 {% block content %}
-<h1>{{ category.name }}</h1>
-
-<!-- Фильтр по рейтингу -->
-<div class="rating-filter">
-    <p>Фильтр по рейтингу:</p>
-    <ul class="tags-list">
-        <li><a href="
-            {% if category.slug == 'tech-station' %}
-                {% url 'homepage:tech_station_rating' rating=5 %}
-            {% elif category.slug == 'evacuators' %}
-                {% url 'homepage:evacuator_rating' rating=5 %}
-            {% elif category.slug == 'tire-services' %}
-                {% url 'homepage:tire_service_rating' rating=5 %}
-            {% endif %}
-        ">Отличные (5+)</a></li>
-        <li><a href="
-            {% if category.slug == 'tech-station' %}
-                {% url 'homepage:tech_station_rating' rating=4 %}
-            {% elif category.slug == 'evacuators' %}
-                {% url 'homepage:evacuator_rating' rating=4 %}
-            {% elif category.slug == 'tire-services' %}
-                {% url 'homepage:tire_service_rating' rating=4 %}
-            {% endif %}
-        ">Хорошие (4+)</a></li>
-        <li><a href="
-            {% if category.slug == 'tech-station' %}
-                {% url 'homepage:tech_station_rating' rating=3 %}
-            {% elif category.slug == 'evacuators' %}
-                {% url 'homepage:evacuator_rating' rating=3 %}
-            {% elif category.slug == 'tire-services' %}
-                {% url 'homepage:tire_service_rating' rating=3 %}
-            {% endif %}
-        ">Неплохие (3+)</a></li>
+    <h1>Услуги в категории "{{ title }}"</h1>
+    
+    {% if current_rating %}
+        <div class="filter-info">
+            <p>Показаны услуги с рейтингом {{ current_rating }}+ 
+               <a href="?" class="clear-filter">✖ Сбросить фильтр</a>
+            </p>
+        </div>
+    {% endif %}
+    
+    <ul class="list-articles">
+        {% for service in services %}
+            <li>
+                <div class="article-panel">
+                    <p class="first">Рейтинг: {{ service.rating }} ⭐</p>
+                    <p class="last">Обновлено: {{ service.time_update|date:"d-m-Y H:i" }}</p>
+                </div>
+                <h2>{{ service.title }}</h2>
+                <p><strong>Адрес:</strong> {{ service.address }}</p>
+                <p><strong>Телефон:</strong> {{ service.phone }}</p>
+                <p>{{ service.description|truncatewords:30 }}</p>
+                <div class="clear"></div>
+                <p class="link-read-post"><a href="{{ service.get_absolute_url }}">Подробнее</a></p>
+            </li>
+        {% empty %}
+            <li>В этой категории нет услуг с таким рейтингом.</li>
+        {% endfor %}
     </ul>
-</div>
-
-<ul class="list-articles">
-    {% for service in services %}
-    <li>
-        <h2><a href="{{ service.get_absolute_url }}">{{ service.title }}</a></h2>
-        <p>{{ service.description|truncatewords:30 }}</p>
-        
-        <div class="article-panel">
-            <p class="first">
-                Рейтинг: {% get_stars service.rating %} ({{ service.rating }})
-            </p>
-            <p class="last">
-                {{ service.address }}
-            </p>
-        </div>
-        
-        <div class="article-panel">
-            <p class="first">⏰ {{ service.work_time|default:"Время не указано" }}</p>
-            <p class="last">📞 {{ service.phone }}</p>
-        </div>
-        
-        <p class="link-read-post">
-            <a href="{{ service.get_absolute_url }}">Подробнее</a>
-        </p>
-    </li>
-    {% empty %}
-    <li>В этой категории пока нет услуг</li>
-    {% endfor %}
-</ul>
 {% endblock %}

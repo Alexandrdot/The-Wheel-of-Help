@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ service.title }}</h1>
+
+    <div class="service-info">
+        <p><strong>Категория:</strong> {{ service.category.name }}</p>
+        <p><strong>Рейтинг:</strong> {{ service.rating }} / 5</p>
+        <p><strong>Адрес:</strong> {{ service.address }}</p>
+        <p><strong>Телефон:</strong> {{ service.phone }}</p>
+        <p><strong>Время работы:</strong> {{ service.work_time|default:"Не указано" }}</p>
+    </div>
+
+    <h2>Описание</h2>
+    <div class="service-description">
+        {{ service.description|linebreaks }}
+    </div>
+
+    {# Специфичные поля для разных типов услуг #}
+    {% if service.specialization %}
+        <h2>Специализация</h2>
+        <p>{{ service.specialization }}</p>
+        <p>Компьютерная диагностика: {% if service.diagnostic_available %}Да{% else %}Нет{% endif %}</p>
+    {% endif %}
+
+    {% if service.wheel_size_from %}
+        <h2>Возможности шиномонтажа</h2>
+        <p>Размер шин: от R{{ service.wheel_size_from }} до R{{ service.wheel_size_to }}</p>
+        <p>Сезонное хранение: {% if service.tire_storage %}Да{% else %}Нет{% endif %}</p>
+    {% endif %}
+
+    {% if service.load_capacity %}
+        <h2>Характеристики эвакуатора</h2>
+        <p>Грузоподъемность: {{ service.load_capacity }} тонн</p>
+        <p>Круглосуточно: {% if service.work_24_7 %}Да{% else %}Нет{% endif %}</p>
+    {% endif %}
+
+    <p><a href="{% url 'homepage:index' %}">На главную</a></p>
+{% endblock %}

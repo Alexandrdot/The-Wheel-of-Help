@@ -1,56 +1,52 @@
 {% extends 'base.html' %}
-{% load homepage_tags %}
-
-{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<h1>{{ title|default:"Добро пожаловать в TheWheelOfHelp"|capfirst }}</h1>
-
-<div class="quote">
-    <p>Найдите лучшие автоуслуги в вашем городе: СТО, эвакуаторы и шиномонтаж с проверенными отзывами и рейтингами.</p>
-</div>
-
-<h2>Популярные услуги</h2>
-
-<div class="services-grid">
-    {% for cat in categories %}
-    <div class="service-card">
-        <h3><a href="{% url 'homepage:category_detail' cat.slug %}">{{ cat.name }}</a></h3>
-        <p>Доступно услуг: {{ cat.services.count }}</p>
-        <p class="link-read-post">
-            <a href="{% url 'homepage:category_detail' cat.slug %}">Перейти →</a>
-        </p>
-    </div>
-    {% endfor %}
-</div>
-
-<h2>Последние добавленные</h2>
-
-<ul class="list-articles">
-    {% for service in services %}
-    <li>
-        <h2>
-            <a href="{{ service.get_absolute_url }}">
-                {{ service.title }}
-            </a>
-        </h2>
-        <p>{{ service.description|truncatewords:30 }}</p>
-        
-        <div class="article-panel">
-            <p class="first">
-                Рейтинг: {% get_stars service.rating %} ({{ service.rating }})
-            </p>
-            <p class="last">
-                {{ service.address }}
+    <h1>{{ title }}</h1>
+    
+    {% if current_rating %}
+        <div class="filter-info">
+            <p>Показаны услуги с рейтингом {{ current_rating }}+ 
+               <a href="?" class="clear-filter">✖ Сбросить фильтр</a>
             </p>
         </div>
-        
-        <p class="link-read-post">
-            <a href="{{ service.get_absolute_url }}">Подробнее</a>
-        </p>
-    </li>
-    {% empty %}
-    <li>Пока нет добавленных услуг</li>
-    {% endfor %}
-</ul>
+    {% endif %}
+    
+    <ul class="list-articles">
+        {% for service in page_obj %}
+            <li>
+                <div class="article-panel">
+                    <p class="first">Категория: {{ service.category.name }}</p>
+                    <p class="last">Рейтинг: {{ service.rating }} ⭐</p>
+                </div>
+                <h2>{{ service.title }}</h2>
+                <p><strong>Адрес:</strong> {{ service.address }}</p>
+                <p><strong>Телефон:</strong> {{ service.phone }}</p>
+                <p>{{ service.description|truncatewords:30 }}</p>
+                <div class="clear"></div>
+                <p class="link-read-post"><a href="{{ service.get_absolute_url }}">Подробнее</a></p>
+            </li>
+        {% empty %}
+            <li>Нет услуг с таким рейтингом.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block pagination %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if current_rating %}&rating={{ current_rating }}{% endif %}">&laquo; Первая</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if current_rating %}&rating={{ current_rating }}{% endif %}">Предыдущая</a>
+            {% endif %}
+
+            <span class="current">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if current_rating %}&rating={{ current_rating }}{% endif %}">Следующая</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if current_rating %}&rating={{ current_rating }}{% endif %}">Последняя &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
 {% endblock %}
