@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, CarService, TireService, TowTruck
+from .models import Category, CarService, TireService, TowTruck, Tag, ContactInfo
 
 
 @admin.register(Category)
@@ -9,7 +9,20 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display_links = ('name',)
 
 
-# Базовый класс для админки всех услуг
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    list_display_links = ('name',)
+    search_fields = ('name',)
+
+
+@admin.register(ContactInfo)
+class ContactInfoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'email', 'website', 'social_vk', 'social_tg')  # УБРАЛ phone2, ДОБАВИЛ social_vk, social_tg
+    list_display_links = ('email',)
+
+
 class BaseServiceAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'address', 'phone', 'rating', 'is_published', 'time_create')
     list_display_links = ('title',)
@@ -17,12 +30,16 @@ class BaseServiceAdmin(admin.ModelAdmin):
     list_filter = ('is_published', 'category', 'rating')
     search_fields = ('title', 'address', 'phone')
     prepopulated_fields = {'slug': ('title',)}
+    filter_horizontal = ('tags',)
     fieldsets = (
         (None, {
             'fields': ('title', 'slug', 'category', 'description')
         }),
         ('Контактная информация', {
             'fields': ('address', 'phone', 'work_time')
+        }),
+        ('Теги и связи', {
+            'fields': ('tags', 'contact_info')
         }),
         ('Рейтинг и статус', {
             'fields': ('rating', 'is_published')

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Услуги с тегом "{{ tag.name }}"</h1>
+    
+    {% for service in services %}
+        <div class="service-item">
+            <h2><a href="{{ service.get_absolute_url }}">{{ service.title }}</a></h2>
+            <p>Категория: {{ service.category.name }}</p>
+            <p>Рейтинг: {{ service.rating }}</p>
+            <p>{{ service.description|truncatewords:30 }}</p>
+        </div>
+    {% empty %}
+        <p>Нет услуг с этим тегом</p>
+    {% endfor %}
+{% endblock %}

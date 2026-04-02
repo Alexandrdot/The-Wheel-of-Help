@@ -1,6 +1,13 @@
 from django import template
+from ..models import Tag
 
 register = template.Library()
+
+
+@register.inclusion_tag('includes/tags_list.html')  
+def show_all_tags():
+    return {'tags': Tag.objects.all()}
+
 
 # Данные для категорий
 categories = [

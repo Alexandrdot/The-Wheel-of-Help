@@ -16,6 +16,7 @@
     <!-- Блок фильтрации по рейтингу -->
     <li class="rating-filter">
         <p>Рейтинг:</p>
+        <ul class="rating-list">
             <li>
                 {% if current_rating %}
                     <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=" class="clear-filter">✖ Сбросить</a>
@@ -41,5 +42,13 @@
                     2.0+ ⭐⭐
                 </a>
             </li>
+        </ul>
+    </li>
+    {% load homepage_tags %}
+    {% show_all_tags %}
+
+    <li class="share">
+        <p>Наш канал</p>
+        <a class="share-yt" href="#" target="_blank" rel="nofollow"></a>
     </li>
 </ul>

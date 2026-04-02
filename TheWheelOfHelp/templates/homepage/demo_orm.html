@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .orm-section {
+        background: #f9f9f9;
+        border-left: 4px solid #333671;
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 4px;
+    }
+    .orm-section h3 {
+        margin-top: 0;
+        color: #333671;
+    }
+    code {
+        background: #eee;
+        padding: 2px 5px;
+        border-radius: 3px;
+        display: block;
+        margin: 10px 0;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background: #333671;
+        color: white;
+    }
+</style>
+
+<!-- 1. Методы выбора записей -->
+<div class="orm-section">
+    <h3>1. Методы выбора записей: first(), last(), order_by(), filter(), exclude(), get(), latest(), earliest(), get_previous_by_, get_next_by_, exists(), count()</h3>
+    <p><strong>first():</strong> {{ results.first|default:"Нет" }}</p>
+    <p><strong>last():</strong> {{ results.last|default:"Нет" }}</p>
+    <p><strong>order_by('rating') (возрастание):</strong> {% for s in results.order_by_asc %}{{ s.title }} ({{ s.rating }}) {% endfor %}</p>
+    <p><strong>order_by('-rating') (убывание):</strong> {% for s in results.order_by_desc %}{{ s.title }} ({{ s.rating }}) {% endfor %}</p>
+    <p><strong>filter(rating__gte=4.0):</strong> {% for s in results.filter %}{{ s.title }} {% endfor %}</p>
+    <p><strong>exclude(rating__lt=4.0):</strong> {% for s in results.exclude %}{{ s.title }} {% endfor %}</p>
+    <p><strong>get(pk=1):</strong> {{ results.get|default:"Не найден" }}</p>
+    <p><strong>latest('time_update'):</strong> {{ results.latest|default:"Нет" }}</p>
+    <p><strong>earliest('time_update'):</strong> {{ results.earliest|default:"Нет" }}</p>
+    <p><strong>get_previous_by_time_update():</strong> {{ results.previous|default:"Нет" }}</p>
+    <p><strong>get_next_by_time_update():</strong> {{ results.next|default:"Нет" }}</p>
+    <p><strong>exists() - есть ли услуги с рейтингом > 4.5:</strong> {{ results.exists }}</p>
+    <p><strong>count() - количество СТО:</strong> {{ results.count }}</p>
+</div>
+
+<!-- 2. Класс Q -->
+<div class="orm-section">
+    <h3>2. Класс Q (AND, OR, NOT)</h3>
+    <p><strong>Q OR (рейтинг > 4.5 ИЛИ диагностика):</strong> {% for s in results.q_or %}{{ s.title }} {% endfor %}</p>
+    <p><strong>Q AND (рейтинг > 4.5 И диагностика):</strong> {% for s in results.q_and %}{{ s.title }} {% endfor %}</p>
+    <p><strong>Q NOT (НЕ рейтинг &lt; 4):</strong> {% for s in results.q_not %}{{ s.title }} {% endfor %}</p>
+    <p><strong>Q + обычные аргументы:</strong> {% for s in results.q_combined %}{{ s.title }} {% endfor %}</p>
+</div>
+
+<!-- 3. Класс F -->
+<div class="orm-section">
+    <h3>3. Класс F (операции с полями)</h3>
+    {% for s in results.f_annotate %}
+        <p>{{ s.title }} - рейтинг: {{ s.rating }} → +0.5: {{ s.rating_plus|floatformat:1 }}</p>
+    {% endfor %}
+</div>
+
+<!-- 4. Класс Value -->
+<div class="orm-section">
+    <h3>4. Класс Value (константные значения)</h3>
+    {% for s in results.value_annotate %}
+        <p>{{ s.title }} - статус: {{ s.status }}, is_tr: {{ s.is_tr }}</p>
+    {% endfor %}
+</div>
+
+<!-- 5. Метод annotate() -->
+<div class="orm-section">
+    <h3>5. Метод annotate() (вычисляемые поля)</h3>
+    {% for s in results.annotate %}
+        <p>{{ s.title }} - work_age: {{ s.work_age|floatformat:1 }}</p>
+    {% endfor %}
+</div>
+
+<!-- 6. Агрегирующие функции -->
+<div class="orm-section">
+    <h3>6. Агрегирующие функции (Min, Max, Avg, Count, Sum)</h3>
+    <p><strong>Min и Max:</strong> мин. рейтинг: {{ results.aggregate_min_max.min_rating|default:"0" }}, макс. рейтинг: {{ results.aggregate_min_max.max_rating|default:"0" }}</p>
+    <p><strong>Несколько функций:</strong> young (мин): {{ results.aggregate_several.young|default:"0" }}, old (макс): {{ results.aggregate_several.old|default:"0" }}, avg: {{ results.aggregate_several.avg_rating|default:"0"|floatformat:1 }}, , sum: {{ results.aggregate_several.sum_rating|default:"0"|floatformat:1 }}</p>
+    <p><strong>С фильтром (pk__gt=1):</strong> {{ results.aggregate_filtered.res|default:"0" }}</p>
+</div>
+
+<!-- 7. Группировка записей -->
+<div class="orm-section">
+    <h3>7. Группировка записей (values + annotate)</h3>
+    <p><strong>Группировка по категориям:</strong></p>
+    <ul>
+    {% for g in results.group_by %}
+        <li>{{ g.category__name|default:"Без категории" }} - {{ g.total }} услуг</li>
+    {% endfor %}
+    </ul>
+    <p><strong>Только категории с услугами (total__gt=0):</strong></p>
+    <ul>
+    {% for g in results.group_filter %}
+        <li>{{ g.name }} - {{ g.total }} услуг</li>
+    {% endfor %}
+    </ul>
+</div>
+
+<!-- 8. Вычисления на стороне СУБД -->
+<div class="orm-section">
+    <h3>8. Вычисления на стороне СУБД (Length)</h3>
+    {% for s in results.db_length %}
+        <p>{{ s.title }} - длина названия: {{ s.len_name }}</p>
+    {% endfor %}
+</div>
+<p><a href="{% url 'homepage:index' %}">← На главную</a></p>
+{% endblock %}

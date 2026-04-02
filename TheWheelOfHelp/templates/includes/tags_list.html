@@ -1,0 +1,10 @@
+{% if tags %}
+<li class="tags-block">
+    <p>Теги:</p>
+    <div class="tags-cloud">
+        {% for tag in tags %}
+            <a href="{% url 'homepage:tag_detail' tag.slug %}">{{ tag.name }}</a>
+        {% endfor %}
+    </div>
+</li>
+{% endif %}
