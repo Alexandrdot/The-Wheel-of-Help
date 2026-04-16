@@ -1,0 +1,88 @@
+/* Цветовая схема в стиле сайта АвтоПомощь */
+
+/* Верхняя панель */
+#header {
+    background: #3F4137;
+    color: #fdc073;
+}
+
+#header a:link, #header a:visited {
+    color: #fdc073;
+}
+
+#header a:hover {
+    color: #FDA83D;
+}
+
+/* Заголовки модулей */
+.module caption, .module h2 {
+    background: #3F4137;
+    color: #fdc073;
+}
+
+/* Хлебные крошки */
+div.breadcrumbs {
+    background: #6A6E5D;
+    color: #fdc073;
+}
+
+div.breadcrumbs a {
+    color: #fdc073;
+}
+
+/* Кнопки */
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #3F4137;
+    color: #fdc073;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #6A6E5D;
+}
+
+/* Ссылки */
+a:link, a:visited {
+    color: #0059b2;
+}
+
+a:hover {
+    color: #CC0000;
+}
+
+/* Панель поиска */
+#toolbar form input[type="submit"] {
+    background: #3F4137;
+}
+
+/* Выделение выбранных элементов в списке */
+.selected, .selected a {
+    background: #fdc073 !important;
+    color: #3F4137 !important;
+}
+
+
+
+/* Сообщения */
+.success {
+    background: #d4edda;
+    color: #155724;
+    border-left-color: #28a745;
+}
+
+.warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left-color: #ffc107;
+}
+
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    border-left-color: #dc3545;
+}
+
+.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-left-color: #17a2b8;
+}
