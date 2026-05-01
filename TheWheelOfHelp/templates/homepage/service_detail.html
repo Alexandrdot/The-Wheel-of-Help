@@ -23,6 +23,12 @@
         <p>Компьютерная диагностика: {% if service.diagnostic_available %}Да{% else %}Нет{% endif %}</p>
     {% endif %}
 
+    {% if service.image %}
+    <div class="service-image">
+        <img src="{{ service.image.url }}" alt="{{ service.title }}" class="service-photo">
+    </div>
+    {% endif %}
+
     {% if service.wheel_size_from %}
         <h2>Возможности шиномонтажа</h2>
         <p>Размер шин: от R{{ service.wheel_size_from }} до R{{ service.wheel_size_to }}</p>

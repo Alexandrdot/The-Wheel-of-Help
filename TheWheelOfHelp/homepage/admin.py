@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from .models import Category, CarService, TireService, TowTruck, Tag, ContactInfo, Status
-
+from django.utils.html import mark_safe
 
 # Собственный фильтр по диапазону рейтинга
 class RatingRangeFilter(admin.SimpleListFilter):
@@ -61,7 +61,8 @@ class ContactInfoAdmin(admin.ModelAdmin):
 
 @admin.register(CarService)
 class CarServiceAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'address', 'phone', 'rating', 'is_published', 'short_description', 'rating_stars')
+    list_display = ('title', 'category', 'address', 'phone', 'rating', 'is_published', 'short_description', 'rating_stars', 'admin_photo')
+    readonly_fields = ('admin_photo',)
     list_display_links = ('title',)
     list_editable = ('is_published', 'rating')
     list_filter = ('category', 'is_published', 'diagnostic_available', RatingRangeFilter)
@@ -69,7 +70,13 @@ class CarServiceAdmin(admin.ModelAdmin):
     ordering = ('-rating',)
     list_per_page = 10
     actions = ['publish_selected', 'unpublish_selected', 'increase_rating', 'decrease_rating']
-    
+    def admin_photo(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" width="50" height="50">')
+        return "Нет фото"
+    admin_photo.short_description = "Изображение"
+
+
     # Пользовательское поле 1: краткое описание
     def short_description(self, obj):
         if len(obj.description) > 50:
@@ -107,6 +114,9 @@ class CarServiceAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Основная информация', {
             'fields': ('title', 'category', 'description')
+        }),
+        ('Изображение', {
+            'fields': ('image', 'admin_photo') 
         }),
         ('Контактная информация', {
             'fields': ('address', 'phone', 'work_time')

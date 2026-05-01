@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Спасибо, {{ name }}!</h1>
+<p>Ваше сообщение отправлено. Мы свяжемся с вами в ближайшее время.</p>
+<p><a href="{% url 'homepage:index' %}">← На главную</a></p>
+{% endblock %}

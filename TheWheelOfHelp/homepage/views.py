@@ -271,3 +271,83 @@ def demo_orm(request):
     )[:5]
 
     return render(request, 'homepage/demo_orm.html', {'results': results})
+
+
+from .forms import ContactForm
+
+
+def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+            print(f"От {name} ({email}): {message}")
+            return render(request, 'homepage/contact_success.html', {'name': name})
+    else:
+        form = ContactForm()
+    
+    return render(request, 'homepage/contact.html', {
+        'form': form,
+        'title': 'Обратная связь',
+        'categories': Category.objects.all(),
+    })
+
+
+from .forms import CarServiceForm
+from django.shortcuts import redirect
+
+
+def add_service(request):
+    if request.method == 'POST':
+        form = CarServiceForm(request.POST, request.FILES)  # Добавлен request.FILES
+        if form.is_valid():
+            form.save()
+            return redirect('homepage:index')
+    else:
+        form = CarServiceForm()
+    
+    return render(request, 'homepage/add_service.html', {
+        'form': form,
+        'title': 'Добавление услуги',
+        'categories': Category.objects.all(),
+    })
+
+
+import uuid
+from .forms import UploadFileForm
+
+
+def handle_uploaded_file(f):
+    # Генерация уникального имени файла
+    ext = ''
+    if '.' in f.name:
+        ext = f.name[f.name.rindex('.'):]
+        name = f.name[:f.name.rindex('.')]
+    else:
+        name = f.name
+    
+    unique_name = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
+    
+    with open(f"media/uploads/{unique_name}", 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    return unique_name
+
+
+def upload_file(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_file = request.FILES['file']
+            filename = handle_uploaded_file(uploaded_file)
+            return render(request, 'homepage/upload_success.html', {'filename': filename})
+    else:
+        form = UploadFileForm()
+    
+    return render(request, 'homepage/upload.html', {
+        'form': form,
+        'title': 'Загрузка файла',
+        'categories': Category.objects.all(),
+    })

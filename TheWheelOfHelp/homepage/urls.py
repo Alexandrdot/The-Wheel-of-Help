@@ -22,4 +22,11 @@ urlpatterns = [
 
     path('demo-orm/', views.demo_orm, name='demo_orm'),
 
+
+    path('contact/', views.contact, name='contact'),
+
+    path('add-service/', views.add_service, name='add_service'),
+
+    path('upload/', views.upload_file, name='upload'),
+
 ]

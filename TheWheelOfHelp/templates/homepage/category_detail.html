@@ -58,7 +58,11 @@
                     <p><strong>Специализация:</strong> {{ service.specialization }}</p>
                     <p><strong>Компьютерная диагностика:</strong> {% if service.diagnostic_available %}Да{% else %}Нет{% endif %}</p>
                 {% endif %}
-
+                {% if service.image %}
+                    <div class="service-image">
+                        <img src="{{ service.image.url }}" alt="{{ service.title }}" class="service-photo">
+                    </div>
+                {% endif %}
                 <!-- Специфичные поля для шиномонтажа -->
                 {% if service.wheel_size_from %}
                     <p><strong>Размер шин:</strong> R{{ service.wheel_size_from }} - R{{ service.wheel_size_to }}</p>

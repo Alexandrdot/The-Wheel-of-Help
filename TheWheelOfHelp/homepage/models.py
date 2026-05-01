@@ -86,7 +86,12 @@ class CarService(BaseService):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, verbose_name="Категория", related_name='car_services')
     tags = models.ManyToManyField(Tag, blank=True, related_name='car_services', verbose_name="Теги")
     contact_info = models.OneToOneField(ContactInfo, on_delete=models.SET_NULL, null=True, blank=True, related_name='car_service', verbose_name="Контакты")
-    
+    image = models.ImageField(
+        upload_to='services/%Y/%m/%d/',
+        blank=True,
+        null=True,
+        verbose_name="Изображение"
+    )
     class Meta:
         verbose_name = "СТО"
         verbose_name_plural = "СТО"
