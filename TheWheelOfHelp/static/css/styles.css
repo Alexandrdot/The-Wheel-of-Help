@@ -408,3 +408,38 @@ ul.lang-list li a:hover {color: #fdc073;}
     font-size: 16px;
 }
 
+nav.list-pages {
+	margin: 1.5em 0;
+}
+nav.list-pages ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+}
+nav.list-pages .page-num {
+	display: inline-block;
+	min-width: 2em;
+	text-align: center;
+}
+nav.list-pages .page-num a {
+	display: inline-block;
+	padding: 4px 8px;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
+nav.list-pages .page-num-selected {
+	padding: 4px 8px;
+	font-weight: bold;
+	border: 1px solid #3F4137;
+	border-radius: 3px;
+	background: #eee;
+}
+
+.service-admin-actions {
+	margin-top: 1.5em;
+}
+

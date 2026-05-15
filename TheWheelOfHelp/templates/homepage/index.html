@@ -36,21 +36,5 @@
 {% endblock %}
 
 {% block pagination %}
-    <div class="pagination">
-        <span class="step-links">
-            {% if page_obj.has_previous %}
-                <a href="?page=1{% if current_rating %}&rating={{ current_rating }}{% endif %}">&laquo; Первая</a>
-                <a href="?page={{ page_obj.previous_page_number }}{% if current_rating %}&rating={{ current_rating }}{% endif %}">Предыдущая</a>
-            {% endif %}
-
-            <span class="current">
-                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}.
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if current_rating %}&rating={{ current_rating }}{% endif %}">Следующая</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}{% if current_rating %}&rating={{ current_rating }}{% endif %}">Последняя &raquo;</a>
-            {% endif %}
-        </span>
-    </div>
+    {% include 'includes/pagination_nav.html' %}
 {% endblock %}

@@ -47,6 +47,13 @@ class CarServiceForm(forms.ModelForm):
         label="Категория",
         empty_label="Выберите категорию"
     )
+    # Стандартный валидатор для телефона (минимальная длина 10 символов)
+    phone = forms.CharField(
+        label="Телефон",
+        min_length=10,
+        max_length=12,
+        widget=forms.TextInput(attrs={'class': 'form-input'})
+    )
     
     # Собственный валидатор для названия
     def clean_title(self):

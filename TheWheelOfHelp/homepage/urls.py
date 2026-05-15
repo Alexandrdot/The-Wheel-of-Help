@@ -7,26 +7,33 @@ register_converter(RatingConverter, 'rating')
 app_name = 'homepage'
 
 urlpatterns = [
-    # Главная
-    path('', views.index, name='index'),
+    path('', views.IndexView.as_view(), name='index'),
 
-    # Страница категории
-    path('category/<slug:cat_slug>/', views.category_detail, name='category_detail'),
+    path('category/<slug:cat_slug>/', views.CategoryDetailView.as_view(), name='category_detail'),
 
-    # Детальные страницы для каждого типа услуги
-    path('tech-station/<slug:service_slug>/', views.car_service_detail, name='car_service_detail'),
-    path('tire-service/<slug:service_slug>/', views.tire_service_detail, name='tire_service_detail'),
-    path('tow-truck/<slug:service_slug>/', views.tow_truck_detail, name='tow_truck_detail'),
+    path('tech-station/<slug:service_slug>/', views.CarServiceDetailView.as_view(), name='car_service_detail'),
+    path('tire-service/<slug:service_slug>/', views.TireServiceDetailView.as_view(), name='tire_service_detail'),
+    path('tow-truck/<slug:service_slug>/', views.TowTruckDetailView.as_view(), name='tow_truck_detail'),
 
-    path('tag/<slug:tag_slug>/', views.tag_detail, name='tag_detail'),
+    path(
+        'car-service/<int:pk>/edit/',
+        views.CarServiceUpdateView.as_view(),
+        name='car_service_edit',
+    ),
+    path(
+        'car-service/<int:pk>/delete/',
+        views.CarServiceDeleteView.as_view(),
+        name='car_service_delete',
+    ),
 
-    path('demo-orm/', views.demo_orm, name='demo_orm'),
+    path('tag/<slug:tag_slug>/', views.TagDetailView.as_view(), name='tag_detail'),
 
+    path('demo-orm/', views.DemoOrmView.as_view(), name='demo_orm'),
 
-    path('contact/', views.contact, name='contact'),
+    path('contact/', views.ContactView.as_view(), name='contact'),
 
-    path('add-service/', views.add_service, name='add_service'),
+    path('add-service/', views.AddServiceView.as_view(), name='add_service'),
 
-    path('upload/', views.upload_file, name='upload'),
+    path('upload/', views.UploadFileView.as_view(), name='upload'),
 
 ]
