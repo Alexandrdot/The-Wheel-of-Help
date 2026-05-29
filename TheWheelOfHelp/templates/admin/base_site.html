@@ -4,11 +4,23 @@
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block extrastyle %}
+    {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/admin/admin.css' %}">
 {% endblock %}
 
 {% block branding %}
-    <h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+    <div id="branding">
+        <h1 id="site-name">
+            <a href="{% url 'admin:index' %}">
+                <span class="admin-brand__title">{{ site_header|default:_('Django administration') }}</span>
+                <span class="admin-brand__subtitle">The Wheel of Help</span>
+            </a>
+        </h1>
+    </div>
 {% endblock %}
 
-{% block nav-global %}{% endblock %}
+{% block nav-global %}
+    <div class="admin-nav-global">
+        <a href="{% url 'homepage:index' %}" class="admin-nav-global__link" target="_blank" rel="noopener">Открыть сайт ↗</a>
+    </div>
+{% endblock %}

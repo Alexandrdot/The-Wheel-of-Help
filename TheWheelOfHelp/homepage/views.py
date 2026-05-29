@@ -1,15 +1,26 @@
+import os
 import uuid
-from django.db.models import Avg, Count, F, Max, Min, Q, Sum, Value
-from django.db.models.functions import Length
+
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import DetailView, FormView, ListView, TemplateView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
-from .forms import CarServiceForm, ContactForm, UploadFileForm
-from .models import CarService, Category, Status, Tag, TireService, TowTruck
+from .constants import CATEGORY_SLUG_STO, CATEGORY_SLUG_TIRE, CATEGORY_SLUG_TOW
+from .forms import CarServiceForm, ContactForm, TireServiceForm, TowTruckForm, UploadFileForm
+from .interactions import set_reaction
+from .mixins import (
+    ServiceDeletePermissionMixin,
+    ServiceEngagementDetailMixin,
+    ServiceUpdatePermissionMixin,
+    ServicesListEngagementMixin,
+)
+from .models import CarService, Category, ServiceReaction, Status, Tag, TireService, TowTruck
 from .utils import DataMixin
 
 
@@ -34,7 +45,7 @@ def _merge_published_services():
     )
 
 
-class IndexView(DataMixin, ListView):
+class IndexView(ServicesListEngagementMixin, DataMixin, ListView):
     """Главная: объединённый список услуг + фильтр по рейтингу + пагинация."""
 
     template_name = 'homepage/index.html'
@@ -59,7 +70,7 @@ class IndexView(DataMixin, ListView):
         )
 
 
-class CategoryDetailView(DataMixin, ListView):
+class CategoryDetailView(ServicesListEngagementMixin, DataMixin, ListView):
     template_name = 'homepage/category_detail.html'
     context_object_name = 'services'
 
@@ -69,11 +80,11 @@ class CategoryDetailView(DataMixin, ListView):
 
     def get_queryset(self):
         cat = self._category
-        if cat.slug == 'tech-station':
+        if cat.slug == CATEGORY_SLUG_STO:
             services = list(CarService.published.filter(category=cat).select_related('category'))
-        elif cat.slug == 'tire-services':
+        elif cat.slug == CATEGORY_SLUG_TIRE:
             services = list(TireService.published.filter(category=cat).select_related('category'))
-        elif cat.slug == 'evacuators':
+        elif cat.slug == CATEGORY_SLUG_TOW:
             services = list(TowTruck.published.filter(category=cat).select_related('category'))
         else:
             services = []
@@ -96,14 +107,51 @@ class CategoryDetailView(DataMixin, ListView):
         )
 
 
-class CarServiceDetailView(DataMixin, DetailView):
+def _service_detail_queryset(request, model):
+    qs = model.objects.select_related('category')
+    if not request.user.is_authenticated:
+        return qs.filter(is_published=Status.PUBLISHED)
+    if request.user.is_superuser or request.user.has_perm(
+        f'homepage.change_{model._meta.model_name}'
+    ):
+        return qs
+    return qs.filter(Q(is_published=Status.PUBLISHED) | Q(author=request.user))
+
+
+class ServiceReactionView(LoginRequiredMixin, View):
+    def post(self, request):
+        next_url = request.POST.get('next') or reverse_lazy('homepage:index')
+        ct_id = request.POST.get('content_type_id')
+        object_id = request.POST.get('object_id')
+        value_key = request.POST.get('value')
+
+        if not ct_id or not object_id or value_key not in ('like', 'dislike'):
+            return redirect(next_url)
+
+        ct = get_object_or_404(ContentType, pk=ct_id)
+        model = ct.model_class()
+        if model not in (CarService, TireService, TowTruck):
+            return redirect(next_url)
+
+        service = get_object_or_404(model, pk=object_id)
+        if not _service_detail_queryset(request, model).filter(pk=service.pk).exists():
+            return redirect(next_url)
+
+        reaction_value = (
+            ServiceReaction.LIKE if value_key == 'like' else ServiceReaction.DISLIKE
+        )
+        set_reaction(request.user, service, reaction_value)
+        return redirect(next_url)
+
+
+class CarServiceDetailView(ServiceEngagementDetailMixin, DataMixin, DetailView):
     model = CarService
     template_name = 'homepage/service_detail.html'
     context_object_name = 'service'
     slug_url_kwarg = 'service_slug'
 
     def get_queryset(self):
-        return CarService.published.select_related('category')
+        return _service_detail_queryset(self.request, CarService)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,18 +159,17 @@ class CarServiceDetailView(DataMixin, DetailView):
             context,
             title=self.object.title,
             selected_cat_id=self.object.category_id,
-            show_admin_actions=True,
         )
 
 
-class TireServiceDetailView(DataMixin, DetailView):
+class TireServiceDetailView(ServiceEngagementDetailMixin, DataMixin, DetailView):
     model = TireService
     template_name = 'homepage/service_detail.html'
     context_object_name = 'service'
     slug_url_kwarg = 'service_slug'
 
     def get_queryset(self):
-        return TireService.published.select_related('category')
+        return _service_detail_queryset(self.request, TireService)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -130,18 +177,17 @@ class TireServiceDetailView(DataMixin, DetailView):
             context,
             title=self.object.title,
             selected_cat_id=self.object.category_id,
-            show_admin_actions=False,
         )
 
 
-class TowTruckDetailView(DataMixin, DetailView):
+class TowTruckDetailView(ServiceEngagementDetailMixin, DataMixin, DetailView):
     model = TowTruck
     template_name = 'homepage/service_detail.html'
     context_object_name = 'service'
     slug_url_kwarg = 'service_slug'
 
     def get_queryset(self):
-        return TowTruck.published.select_related('category')
+        return _service_detail_queryset(self.request, TowTruck)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -149,11 +195,10 @@ class TowTruckDetailView(DataMixin, DetailView):
             context,
             title=self.object.title,
             selected_cat_id=self.object.category_id,
-            show_admin_actions=False,
         )
 
 
-class TagDetailView(DataMixin, ListView):
+class TagDetailView(ServicesListEngagementMixin, DataMixin, ListView):
     template_name = 'homepage/tag_detail.html'
     context_object_name = 'services'
     allow_empty = True
@@ -180,85 +225,6 @@ class TagDetailView(DataMixin, ListView):
         )
 
 
-class DemoOrmView(DataMixin, TemplateView):
-    template_name = 'homepage/demo_orm.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        results = {}
-
-        results['first'] = CarService.objects.first()
-        results['last'] = CarService.objects.last()
-        results['order_by_asc'] = CarService.objects.order_by('rating')[:3]
-        results['order_by_desc'] = CarService.objects.order_by('-rating')[:3]
-        results['filter'] = CarService.objects.filter(rating__gte=4.0)
-        results['exclude'] = CarService.objects.exclude(rating__lt=4.0)
-        try:
-            results['get'] = CarService.objects.get(pk=1)
-        except CarService.DoesNotExist:
-            results['get'] = None
-        try:
-            results['latest'] = CarService.objects.latest('time_update')
-        except CarService.DoesNotExist:
-            results['latest'] = None
-        try:
-            results['earliest'] = CarService.objects.earliest('time_update')
-        except CarService.DoesNotExist:
-            results['earliest'] = None
-
-        last_service = CarService.objects.last()
-        if last_service:
-            try:
-                results['previous'] = last_service.get_previous_by_time_update()
-            except CarService.DoesNotExist:
-                results['previous'] = None
-            try:
-                results['next'] = last_service.get_next_by_time_update()
-            except CarService.DoesNotExist:
-                results['next'] = None
-        else:
-            results['previous'] = results['next'] = None
-
-        results['exists'] = CarService.objects.filter(rating__gt=4.5).exists()
-        results['count'] = CarService.objects.count()
-
-        results['q_or'] = CarService.objects.filter(Q(rating__lt=5) | Q(diagnostic_available=True))[:5]
-        results['q_and'] = CarService.objects.filter(Q(rating__lt=5) & Q(diagnostic_available=True))[:5]
-        results['q_not'] = CarService.objects.filter(~Q(rating__lt=4))[:5]
-        results['q_combined'] = CarService.objects.filter(
-            Q(rating__gt=4.0) | Q(diagnostic_available=True),
-            is_published=1,
-        )[:5]
-
-        results['f_annotate'] = CarService.objects.annotate(rating_plus=F('rating') + 0.5)[:5]
-        results['f_update_demo'] = "F('rating') + 1 увеличит рейтинг на 1"
-
-        results['value_annotate'] = CarService.objects.annotate(is_tr=Value(True), status=Value('Активно'))[:5]
-        results['annotate'] = CarService.objects.annotate(work_age=F('rating') * 2)[:5]
-
-        results['aggregate_min_max'] = CarService.objects.aggregate(
-            min_rating=Min('rating'),
-            max_rating=Max('rating'),
-        )
-        results['aggregate_several'] = CarService.objects.aggregate(
-            young=Min('rating'),
-            old=Max('rating'),
-            avg_rating=Avg('rating'),
-            sum_rating=Sum('rating'),
-        )
-        results['aggregate_filtered'] = CarService.objects.filter(pk__gt=1).aggregate(res=Count('id'))
-        results['group_by'] = CarService.objects.values('category__name').annotate(total=Count('id'))
-        results['group_filter'] = Category.objects.annotate(total=Count('car_services')).filter(total__gt=0)
-        results['db_length'] = CarService.objects.annotate(len_name=Length('title'))[:5]
-
-        return self.get_mixin_context(
-            context,
-            title='Демонстрация ORM',
-            selected_cat_id=0,
-            results=results,
-        )
-
-
 class ContactView(DataMixin, FormView):
     form_class = ContactForm
     template_name = 'homepage/contact.html'
@@ -276,34 +242,145 @@ class ContactView(DataMixin, FormView):
         return self.get_mixin_context(context, title='Обратная связь', selected_cat_id=0)
 
 
-class AddServiceView(DataMixin, CreateView):
-    form_class = CarServiceForm
-    template_name = 'homepage/add_service.html'
-    success_url = reverse_lazy('homepage:index')
+class AddServiceChoiceView(LoginRequiredMixin, DataMixin, TemplateView):
+    template_name = 'homepage/add_service_choice.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return self.get_mixin_context(context, title='Добавление услуги', selected_cat_id=0)
 
 
-class CarServiceUpdateView(DataMixin, UpdateView):
+class _ServiceFormMixin(DataMixin):
+    template_name = 'homepage/service_form.html'
+
+    def get_success_url(self):
+        if self.object.is_published:
+            return self.object.get_absolute_url()
+        return self.object.category.get_absolute_url()
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        if not self.object.pk:
+            self.object.author = self.request.user
+        self.object.save()
+        form.save_m2m()
+        from django.http import HttpResponseRedirect
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        is_edit = bool(self.object and self.object.pk)
+        cat_id = self.object.category_id if is_edit else 0
+        return self.get_mixin_context(
+            context,
+            is_edit=is_edit,
+            selected_cat_id=cat_id,
+        )
+
+
+class CarServiceCreateView(LoginRequiredMixin, _ServiceFormMixin, CreateView):
     model = CarService
     form_class = CarServiceForm
-    template_name = 'homepage/add_service.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавление СТО'
+        context['service_type_label'] = 'СТО'
+        return context
+
+
+class CarServiceUpdateView(ServiceUpdatePermissionMixin, _ServiceFormMixin, UpdateView):
+    model = CarService
+    form_class = CarServiceForm
+    queryset = CarService.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Редактирование СТО'
+        context['service_type_label'] = 'СТО'
+        return context
+
+
+class CarServiceDeleteView(ServiceDeletePermissionMixin, DataMixin, DeleteView):
+    model = CarService
+    template_name = 'homepage/service_confirm_delete.html'
+    queryset = CarService.objects.all()
     success_url = reverse_lazy('homepage:index')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return self.get_mixin_context(
             context,
-            title='Редактирование услуги',
+            title='Удаление услуги',
             selected_cat_id=self.object.category_id,
         )
 
 
-class CarServiceDeleteView(DataMixin, DeleteView):
-    model = CarService
-    template_name = 'homepage/car_service_confirm_delete.html'
+class TireServiceCreateView(LoginRequiredMixin, _ServiceFormMixin, CreateView):
+    model = TireService
+    form_class = TireServiceForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавление шиномонтажа'
+        context['service_type_label'] = 'Шиномонтаж'
+        return context
+
+
+class TireServiceUpdateView(ServiceUpdatePermissionMixin, _ServiceFormMixin, UpdateView):
+    model = TireService
+    form_class = TireServiceForm
+    queryset = TireService.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Редактирование шиномонтажа'
+        context['service_type_label'] = 'Шиномонтаж'
+        return context
+
+
+class TireServiceDeleteView(ServiceDeletePermissionMixin, DataMixin, DeleteView):
+    model = TireService
+    template_name = 'homepage/service_confirm_delete.html'
+    queryset = TireService.objects.all()
+    success_url = reverse_lazy('homepage:index')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(
+            context,
+            title='Удаление услуги',
+            selected_cat_id=self.object.category_id,
+        )
+
+
+class TowTruckCreateView(LoginRequiredMixin, _ServiceFormMixin, CreateView):
+    model = TowTruck
+    form_class = TowTruckForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавление эвакуатора'
+        context['service_type_label'] = 'Эвакуатор'
+        return context
+
+
+class TowTruckUpdateView(ServiceUpdatePermissionMixin, _ServiceFormMixin, UpdateView):
+    model = TowTruck
+    form_class = TowTruckForm
+    queryset = TowTruck.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Редактирование эвакуатора'
+        context['service_type_label'] = 'Эвакуатор'
+        return context
+
+
+class TowTruckDeleteView(ServiceDeletePermissionMixin, DataMixin, DeleteView):
+    model = TowTruck
+    template_name = 'homepage/service_confirm_delete.html'
+    queryset = TowTruck.objects.all()
     success_url = reverse_lazy('homepage:index')
 
     def get_context_data(self, **kwargs):
@@ -324,14 +401,17 @@ def handle_uploaded_file(f):
         name = f.name
 
     unique_name = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
+    upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = os.path.join(upload_dir, unique_name)
 
-    with open(f'media/uploads/{unique_name}', 'wb+') as destination:
+    with open(file_path, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
     return unique_name
 
 
-class UploadFileView(DataMixin, View):
+class UploadFileView(LoginRequiredMixin, DataMixin, View):
     def get(self, request):
         form = UploadFileForm()
         ctx = self.get_mixin_context({'form': form}, title='Загрузка файла', selected_cat_id=0)

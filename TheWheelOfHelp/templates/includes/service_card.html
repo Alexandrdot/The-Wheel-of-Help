@@ -1,0 +1,80 @@
+<article class="service-card">
+    <div class="service-card__top">
+        {% if service.image %}
+            <a class="service-card__media" href="{{ service.get_absolute_url }}">
+                <img src="{{ service.image.url }}" alt="{{ service.title }}">
+            </a>
+        {% endif %}
+        <div class="service-card__intro">
+            <div class="service-card__badges">
+                <span class="service-card__badge service-card__badge--category">{{ service.category.name }}</span>
+                <span class="service-card__badge service-card__badge--rating">{{ service.rating }} ★</span>
+            </div>
+            <h2 class="service-card__title">
+                <a href="{{ service.get_absolute_url }}">{{ service.title }}</a>
+            </h2>
+            {% if show_author %}
+                <p class="service-card__author">Автор: {{ service.author.username|default:"неизвестен" }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <ul class="service-card__facts">
+        <li><span class="service-card__label">Адрес</span> {{ service.address }}</li>
+        <li><span class="service-card__label">Телефон</span> {{ service.phone }}</li>
+        {% if show_updated %}
+            <li><span class="service-card__label">Обновлено</span> {{ service.time_update|date:"d.m.Y H:i" }}</li>
+        {% else %}
+            <li><span class="service-card__label">Время работы</span> {{ service.work_time|default:"Не указано" }}</li>
+        {% endif %}
+    </ul>
+
+    {% if service.description %}
+        <p class="service-card__desc">{{ service.description|truncatewords:35 }}</p>
+    {% endif %}
+
+    {% if service.tags.all %}
+        <div class="service-card__tags">
+            {% for tag in service.tags.all %}
+                <a class="service-card__tag" href="{% url 'homepage:tag_detail' tag.slug %}">{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if service.specialization %}
+        <ul class="service-card__extras">
+            <li><span class="service-card__label">Специализация</span> {{ service.specialization }}</li>
+            <li><span class="service-card__label">Диагностика</span> {% if service.diagnostic_available %}Да{% else %}Нет{% endif %}</li>
+        </ul>
+    {% endif %}
+
+    {% if service.wheel_size_from %}
+        <ul class="service-card__extras">
+            <li><span class="service-card__label">Размер шин</span> R{{ service.wheel_size_from }} – R{{ service.wheel_size_to }}</li>
+            <li><span class="service-card__label">Хранение</span> {% if service.tire_storage %}Да{% else %}Нет{% endif %}</li>
+        </ul>
+    {% endif %}
+
+    {% if service.load_capacity %}
+        <ul class="service-card__extras">
+            <li><span class="service-card__label">Грузоподъёмность</span> {{ service.load_capacity }} т</li>
+            <li><span class="service-card__label">Круглосуточно</span> {% if service.work_24_7 %}Да{% else %}Нет{% endif %}</li>
+        </ul>
+    {% endif %}
+
+    {% if service.contact_info %}
+        <div class="service-card__contacts">
+            {% if service.contact_info.email %}<span>{{ service.contact_info.email }}</span>{% endif %}
+            {% if service.contact_info.website %}<span>{{ service.contact_info.website }}</span>{% endif %}
+        </div>
+    {% endif %}
+
+    <div class="service-card__engagement">
+        {% include 'includes/service_reactions.html' with compact=True show_comments_count=True show_login_hint=False %}
+    </div>
+
+    <footer class="service-card__footer">
+        <a class="btn-primary" href="{{ service.get_absolute_url }}">Подробнее</a>
+        {% include 'includes/service_actions.html' %}
+    </footer>
+</article>

@@ -1,0 +1,42 @@
+<section class="service-comments" id="comments">
+    <header class="service-comments__header">
+        <h2 class="service-comments__title">Комментарии</h2>
+        <span class="service-comments__count">{{ comments|length }}</span>
+    </header>
+
+    {% if comment_form %}
+        <form class="service-comments__form form-panel" method="post" action="">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="comment">
+            <label class="form-label" for="id_comment_text">Добавить комментарий</label>
+            {{ comment_form.text }}
+            {% if comment_form.text.errors %}
+                <p class="form-error">{{ comment_form.text.errors.0 }}</p>
+            {% endif %}
+            <button type="submit" class="btn-primary">Отправить</button>
+        </form>
+    {% elif not user.is_authenticated %}
+        <p class="service-comments__guest">
+            <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}">Войдите</a>,
+            чтобы оставить комментарий.
+        </p>
+    {% endif %}
+
+    {% if comments %}
+        <ul class="service-comments__list">
+            {% for comment in comments %}
+                <li class="service-comments__item">
+                    <div class="service-comments__meta">
+                        <strong class="service-comments__author">{{ comment.author.username }}</strong>
+                        <time class="service-comments__time" datetime="{{ comment.time_create|date:'c' }}">
+                            {{ comment.time_create|date:"d.m.Y H:i" }}
+                        </time>
+                    </div>
+                    <p class="service-comments__text">{{ comment.text|linebreaksbr }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="service-comments__empty">Пока нет комментариев. Будьте первым!</p>
+    {% endif %}
+</section>

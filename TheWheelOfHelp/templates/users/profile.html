@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-page profile-page">
+    <header class="page-header">
+        <h1 class="page-title">Профиль</h1>
+        <p class="form-page__lead">Личные данные и настройки аккаунта</p>
+    </header>
+
+    <form method="post" enctype="multipart/form-data" class="profile-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-alert form-alert--error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="profile-layout">
+            <aside class="profile-aside">
+                <div class="profile-avatar">
+                    {% if user.photo %}
+                        <img src="{{ user.photo.url }}" alt="Фото профиля">
+                    {% else %}
+                        <img src="{{ default_image }}" alt="Фото по умолчанию">
+                    {% endif %}
+                </div>
+                <p class="profile-aside__name">{{ user.username }}</p>
+                <p class="profile-aside__email">{{ user.email|default:"E-mail не указан" }}</p>
+                <a class="profile-aside__link" href="{% url 'users:password_change' %}">Сменить пароль</a>
+            </aside>
+
+            <div class="profile-main">
+                <section class="form-panel">
+                    <h2 class="form-panel__title">Фото</h2>
+                    {% include 'includes/form_field.html' with field=form.photo %}
+                </section>
+
+                <section class="form-panel">
+                    <h2 class="form-panel__title">Учётная запись</h2>
+                    <div class="form-panel__grid">
+                        {% include 'includes/form_field.html' with field=form.username %}
+                        {% include 'includes/form_field.html' with field=form.email %}
+                    </div>
+                    <p class="form-field__hint form-field__hint--block">Логин и E-mail изменяются только через администратора.</p>
+                </section>
+
+                <section class="form-panel">
+                    <div class="form-panel__head">
+                        <h2 class="form-panel__title">Мои услуги</h2>
+                        <a class="btn-secondary btn-secondary--sm" href="{% url 'homepage:add_service' %}">Добавить</a>
+                    </div>
+                    {% if my_services %}
+                        <ul class="profile-services">
+                            {% for service in my_services %}
+                                <li class="profile-services__item">
+                                    <div class="profile-services__info">
+                                        <a class="profile-services__title" href="{{ service.get_absolute_url }}">{{ service.title }}</a>
+                                        <span class="profile-services__meta">{{ service.category.name }} · {% if service.is_published %}опубликовано{% else %}черновик{% endif %}</span>
+                                    </div>
+                                    <div class="profile-services__actions">
+                                        <a class="btn-action" href="{{ service.get_edit_url }}">Изменить</a>
+                                        <a class="btn-action btn-danger" href="{{ service.get_delete_url }}">Удалить</a>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="profile-services__empty">Вы ещё не добавляли услуги. <a href="{% url 'homepage:add_service' %}">Создать первую запись</a></p>
+                    {% endif %}
+                </section>
+
+                <section class="form-panel">
+                    <h2 class="form-panel__title">Личные данные</h2>
+                    <div class="form-panel__grid form-panel__grid--2">
+                        {% include 'includes/form_field.html' with field=form.first_name %}
+                        {% include 'includes/form_field.html' with field=form.last_name %}
+                    </div>
+                    <div class="form-field form-field--date">
+                        <label class="form-field__label">{{ form.date_birth.label }}</label>
+                        <div class="form-date">{{ form.date_birth }}</div>
+                        {% if form.date_birth.errors %}
+                            <ul class="form-field__errors">
+                                {% for error in form.date_birth.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Сохранить профиль</button>
+                    <a class="btn-secondary" href="{% url 'homepage:index' %}">На главную</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

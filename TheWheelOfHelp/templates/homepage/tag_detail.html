@@ -1,18 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Услуги с тегом "{{ tag.name }}"</h1>
-    
-    {% for service in services %}
-        <div class="service-item">
-            <h2><a href="{{ service.get_absolute_url }}">{{ service.title }}</a></h2>
-            <p>Категория: {{ service.category.name }}</p>
-            <p>Рейтинг: {{ service.rating }}</p>
-            <p>{{ service.description|truncatewords:30 }}</p>
-        </div>
-    {% empty %}
-        <p>Нет услуг с этим тегом</p>
-    {% endfor %}
+    <header class="page-header">
+        <h1 class="page-title">Тег: {{ tag.name }}</h1>
+    </header>
+
+    <div class="services-list">
+        {% for service in services %}
+            {% include 'includes/service_card.html' with service=service %}
+        {% empty %}
+            <p class="services-empty">Нет услуг с этим тегом.</p>
+        {% endfor %}
+    </div>
 {% endblock %}
 
 {% block pagination %}

@@ -1,0 +1,9 @@
+{% load auth_extras %}
+<div class="service-admin-actions">
+    {% if user|user_can_edit_service:service %}
+        <a class="btn-action" href="{{ service.get_edit_url }}">Редактировать</a>
+    {% endif %}
+    {% if user|user_can_delete_service:service %}
+        <a class="btn-action btn-danger" href="{{ service.get_delete_url }}">Удалить</a>
+    {% endif %}
+</div>

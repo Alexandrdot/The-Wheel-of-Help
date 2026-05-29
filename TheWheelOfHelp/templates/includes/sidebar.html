@@ -1,54 +1,65 @@
-<ul id="leftchapters">
-    {% if selected_cat_id == 0 %}
-        <li class="selected">Все категории</li>
-    {% else %}
-        <li><a href="{% url 'homepage:index' %}">Все категории</a></li>
-    {% endif %}
-
-    {% for cat in categories %}
-        {% if cat.id == selected_cat_id %}
-            <li class="selected">{{ cat.name }}</li>
-        {% else %}
-            <li><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
-        {% endif %}
-    {% endfor %}
-    
-    <!-- Блок фильтрации по рейтингу -->
-    <li class="rating-filter">
-        <p>Рейтинг:</p>
-        <ul class="rating-list">
-            <li>
-                {% if current_rating %}
-                    <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=" class="clear-filter">✖ Сбросить</a>
+<aside class="sidebar-panel">
+    <nav class="sidebar-nav" aria-label="Боковое меню">
+        <section class="sidebar-section">
+            <h2 class="sidebar-heading">Категории</h2>
+            <ul class="sidebar-menu">
+                {% if selected_cat_id == 0 %}
+                    <li class="is-active"><span>Все категории</span></li>
+                {% else %}
+                    <li><a href="{% url 'homepage:index' %}">Все категории</a></li>
                 {% endif %}
-            </li>
-            <li>
-                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=4.8" {% if current_rating == 4.8 %}class="active"{% endif %}>
-                    5.0 ⭐⭐⭐⭐⭐
-                </a>
-            </li>
-            <li>
-                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=4.0" {% if current_rating == 4.0 %}class="active"{% endif %}>
-                    4.0+ ⭐⭐⭐⭐
-                </a>
-            </li>
-            <li>
-                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=3.0" {% if current_rating == 3.0 %}class="active"{% endif %}>
-                    3.0+ ⭐⭐⭐
-                </a>
-            </li>
-            <li>
-                <a href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=2.0" {% if current_rating == 2.0 %}class="active"{% endif %}>
-                    2.0+ ⭐⭐
-                </a>
-            </li>
-        </ul>
-    </li>
-    {% load homepage_tags %}
-    {% show_all_tags %}
+                {% for cat in categories %}
+                    {% if cat.id == selected_cat_id %}
+                        <li class="is-active"><span>{{ cat.name }}</span></li>
+                    {% else %}
+                        <li><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </section>
 
-    <li class="share">
-        <p>Наш канал</p>
-        <a class="share-yt" href="#" target="_blank" rel="nofollow"></a>
-    </li>
-</ul>
+        <section class="sidebar-section">
+            <h2 class="sidebar-heading">Рейтинг</h2>
+            <ul class="sidebar-rating">
+                {% if current_rating %}
+                    <li>
+                        <a class="sidebar-rating__clear" href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=">Сбросить фильтр</a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a class="sidebar-rating__item{% if current_rating == 4.8 %} is-active{% endif %}"
+                       href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=4.8">5.0 ★★★★★</a>
+                </li>
+                <li>
+                    <a class="sidebar-rating__item{% if current_rating == 4.0 %} is-active{% endif %}"
+                       href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=4.0">4.0+ ★★★★</a>
+                </li>
+                <li>
+                    <a class="sidebar-rating__item{% if current_rating == 3.0 %} is-active{% endif %}"
+                       href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=3.0">3.0+ ★★★</a>
+                </li>
+                <li>
+                    <a class="sidebar-rating__item{% if current_rating == 2.0 %} is-active{% endif %}"
+                       href="?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}rating=2.0">2.0+ ★★</a>
+                </li>
+            </ul>
+        </section>
+
+        {% load homepage_tags %}
+        {% show_all_tags %}
+
+        <section class="sidebar-section">
+            <h2 class="sidebar-heading">Управление</h2>
+            <ul class="sidebar-menu sidebar-menu--compact">
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'homepage:add_service' %}">Добавить услугу</a></li>
+                    <li><a href="{% url 'users:profile' %}">Профиль</a></li>
+                    <li><a href="{% url 'homepage:upload' %}">Загрузка файла</a></li>
+                {% else %}
+                    <li><a href="{% url 'users:login' %}?next={% url 'homepage:add_service' %}">Войти</a></li>
+                    <li><a href="{% url 'users:register' %}">Регистрация</a></li>
+                {% endif %}
+            </ul>
+        </section>
+    </nav>
+</aside>

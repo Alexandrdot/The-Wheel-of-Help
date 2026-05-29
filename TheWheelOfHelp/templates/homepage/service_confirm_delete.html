@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-page form-page--narrow">
+    <header class="page-header">
+        <h1 class="page-title">{{ title }}</h1>
+    </header>
+
+    <div class="form-panel form-panel--danger">
+        <p class="delete-confirm__text">
+            Удалить услугу <strong>{{ object.title }}</strong>?
+        </p>
+        <p class="delete-confirm__hint">Действие необратимо. Запись будет удалена из базы данных.</p>
+
+        <form method="post" class="form-actions form-actions--start">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger-solid">Удалить</button>
+            <a class="btn-secondary" href="{{ object.get_absolute_url }}">Отмена</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

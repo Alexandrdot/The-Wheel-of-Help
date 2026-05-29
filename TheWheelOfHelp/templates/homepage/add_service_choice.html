@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-page">
+    <header class="page-header">
+        <h1 class="page-title">Добавление услуги</h1>
+        <p class="form-page__lead">Выберите тип услуги, которую хотите добавить на сайт.</p>
+    </header>
+
+    <div class="type-select">
+        <a class="type-select__card" href="{% url 'homepage:add_car_service' %}">
+            <span class="type-select__icon type-select__icon--sto">СТО</span>
+            <span class="type-select__name">Автосервис</span>
+            <span class="type-select__desc">Ремонт, диагностика, техобслуживание</span>
+        </a>
+        <a class="type-select__card" href="{% url 'homepage:add_tire_service' %}">
+            <span class="type-select__icon type-select__icon--tire">Ш</span>
+            <span class="type-select__name">Шиномонтаж</span>
+            <span class="type-select__desc">Монтаж, балансировка, хранение шин</span>
+        </a>
+        <a class="type-select__card" href="{% url 'homepage:add_tow_truck' %}">
+            <span class="type-select__icon type-select__icon--tow">Э</span>
+            <span class="type-select__name">Эвакуатор</span>
+            <span class="type-select__desc">Эвакуация и помощь на дороге</span>
+        </a>
+    </div>
+
+    <p class="form-page__back">
+        <a class="btn-secondary" href="{% url 'homepage:index' %}">← На главную</a>
+    </p>
+</div>
+{% endblock %}

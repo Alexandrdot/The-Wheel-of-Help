@@ -1,88 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Услуги в категории "{{ title }}"</h1>
-    
-    {% if current_rating %}
-        <div class="filter-info">
-            <p>Показаны услуги с рейтингом {{ current_rating }}+ 
-               <a href="?" class="clear-filter">✖ Сбросить фильтр</a>
+    <header class="page-header">
+        <h1 class="page-title">{{ title }}</h1>
+        {% if current_rating %}
+            <p class="page-notice">
+                Показаны услуги с рейтингом {{ current_rating }} и выше.
+                <a href="?" class="page-notice__link">Сбросить фильтр</a>
             </p>
-        </div>
-    {% endif %}
-    
-    <ul class="list-articles">
+        {% endif %}
+    </header>
+
+    <div class="services-list">
         {% for service in services %}
-            <li>
-                <div class="article-panel">
-                    <p class="first">Рейтинг: {{ service.rating }} ⭐</p>
-                    <p class="last">Обновлено: {{ service.time_update|date:"d-m-Y H:i" }}</p>
-                </div>
-                <h2>{{ service.title }}</h2>
-                <p><strong>Адрес:</strong> {{ service.address }}</p>
-                <p><strong>Телефон:</strong> {{ service.phone }}</p>
-                <p><strong>Время работы:</strong> {{ service.work_time|default:"Не указано" }}</p>
-                <p>{{ service.description|truncatewords:30 }}</p>
-
-                <!-- Связь ManyToMany - Теги -->
-                {% if service.tags.all %}
-                    <div class="service-tags">
-                        <strong>Теги:</strong>
-                        {% for tag in service.tags.all %}
-                            <a href="{% url 'homepage:tag_detail' tag.slug %}">#{{ tag.name }}</a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
-                <!-- Связь OneToOne - Контактная информация -->
-                {% if service.contact_info %}
-                    <div class="contact-info">
-                        <strong>Дополнительные контакты:</strong>
-                        {% if service.contact_info.email %}
-                            <p> Email: {{ service.contact_info.email }}</p>
-                        {% endif %}
-                        {% if service.contact_info.website %}
-                            <p> Сайт: {{ service.contact_info.website }}</p>
-                        {% endif %}
-                        {% if service.contact_info.social_vk %}
-                            <p> ВК: {{ service.contact_info.social_vk }}</p>
-                        {% endif %}
-                        {% if service.contact_info.social_tg %}
-                            <p> Telegram: {{ service.contact_info.social_tg }}</p>
-                        {% endif %}
-                    </div>
-                {% endif %}
-
-                <!-- Специфичные поля для СТО -->
-                {% if service.specialization %}
-                    <p><strong>Специализация:</strong> {{ service.specialization }}</p>
-                    <p><strong>Компьютерная диагностика:</strong> {% if service.diagnostic_available %}Да{% else %}Нет{% endif %}</p>
-                {% endif %}
-                {% if service.image %}
-                    <div class="service-image">
-                        <img src="{{ service.image.url }}" alt="{{ service.title }}" class="service-photo">
-                    </div>
-                {% endif %}
-                <!-- Специфичные поля для шиномонтажа -->
-                {% if service.wheel_size_from %}
-                    <p><strong>Размер шин:</strong> R{{ service.wheel_size_from }} - R{{ service.wheel_size_to }}</p>
-                    <p><strong>Сезонное хранение:</strong> {% if service.tire_storage %}Да{% else %}Нет{% endif %}</p>
-                {% endif %}
-
-                <!-- Специфичные поля для эвакуатора -->
-                {% if service.load_capacity %}
-                    <p><strong>Грузоподъемность:</strong> {{ service.load_capacity }} тонн</p>
-                    <p><strong>Круглосуточно:</strong> {% if service.work_24_7 %}Да{% else %}Нет{% endif %}</p>
-                {% endif %}
-
-                <div class="clear"></div>
-                <p class="link-read-post"><a href="{{ service.get_absolute_url }}">Подробнее</a></p>
-            </li>
-            
+            {% include 'includes/service_card.html' with service=service show_updated=True %}
         {% empty %}
-            <li>В этой категории нет услуг с таким рейтингом.</li>
+            <p class="services-empty">В этой категории нет услуг с выбранными параметрами.</p>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}
 
 {% block pagination %}

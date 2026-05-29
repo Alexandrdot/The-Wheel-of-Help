@@ -1,53 +1,93 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{{ service.title }}</h1>
+    <article class="service-detail">
+        <header class="service-detail__header">
+            <div class="service-detail__badges">
+                <span class="service-card__badge service-card__badge--category">{{ service.category.name }}</span>
+                <span class="service-card__badge service-card__badge--rating">{{ service.rating }} / 5</span>
+            </div>
+            <h1 class="service-detail__title">{{ service.title }}</h1>
+            {% if service.author %}
+                <p class="service-detail__author">Автор: {{ service.author.username }}</p>
+            {% endif %}
+            <div class="service-detail__engagement">
+                {% include 'includes/service_reactions.html' with compact=False show_comments_count=False show_login_hint=True %}
+            </div>
+        </header>
 
-    <div class="service-info">
-        <p><strong>Категория:</strong> {{ service.category.name }}</p>
-        <p><strong>Рейтинг:</strong> {{ service.rating }} / 5</p>
-        <p><strong>Адрес:</strong> {{ service.address }}</p>
-        <p><strong>Телефон:</strong> {{ service.phone }}</p>
-        <p><strong>Время работы:</strong> {{ service.work_time|default:"Не указано" }}</p>
-    </div>
+        <div class="service-detail__layout">
+            {% if service.image %}
+                <figure class="service-detail__figure">
+                    <img src="{{ service.image.url }}" alt="{{ service.title }}">
+                </figure>
+            {% endif %}
 
-    <h2>Описание</h2>
-    <div class="service-description">
-        {{ service.description|linebreaks }}
-    </div>
+            <div class="service-detail__main">
+                <section class="service-detail__block">
+                    <h2 class="service-detail__heading">Контакты</h2>
+                    <ul class="service-detail__facts">
+                        <li><span>Адрес</span> {{ service.address }}</li>
+                        <li><span>Телефон</span> {{ service.phone }}</li>
+                        <li><span>Время работы</span> {{ service.work_time|default:"Не указано" }}</li>
+                    </ul>
+                </section>
 
-    {# Специфичные поля для разных типов услуг #}
-    {% if service.specialization %}
-        <h2>Специализация</h2>
-        <p>{{ service.specialization }}</p>
-        <p>Компьютерная диагностика: {% if service.diagnostic_available %}Да{% else %}Нет{% endif %}</p>
-    {% endif %}
+                {% if service.description %}
+                    <section class="service-detail__block">
+                        <h2 class="service-detail__heading">Описание</h2>
+                        <div class="service-detail__text">{{ service.description|linebreaks }}</div>
+                    </section>
+                {% endif %}
 
-    {% if service.image %}
-    <div class="service-image">
-        <img src="{{ service.image.url }}" alt="{{ service.title }}" class="service-photo">
-    </div>
-    {% endif %}
+                {% if service.specialization %}
+                    <section class="service-detail__block">
+                        <h2 class="service-detail__heading">СТО</h2>
+                        <ul class="service-detail__facts">
+                            <li><span>Специализация</span> {{ service.specialization }}</li>
+                            <li><span>Диагностика</span> {% if service.diagnostic_available %}Да{% else %}Нет{% endif %}</li>
+                        </ul>
+                    </section>
+                {% endif %}
 
-    {% if service.wheel_size_from %}
-        <h2>Возможности шиномонтажа</h2>
-        <p>Размер шин: от R{{ service.wheel_size_from }} до R{{ service.wheel_size_to }}</p>
-        <p>Сезонное хранение: {% if service.tire_storage %}Да{% else %}Нет{% endif %}</p>
-    {% endif %}
+                {% if service.wheel_size_from %}
+                    <section class="service-detail__block">
+                        <h2 class="service-detail__heading">Шиномонтаж</h2>
+                        <ul class="service-detail__facts">
+                            <li><span>Размер шин</span> R{{ service.wheel_size_from }} – R{{ service.wheel_size_to }}</li>
+                            <li><span>Хранение</span> {% if service.tire_storage %}Да{% else %}Нет{% endif %}</li>
+                        </ul>
+                    </section>
+                {% endif %}
 
-    {% if service.load_capacity %}
-        <h2>Характеристики эвакуатора</h2>
-        <p>Грузоподъемность: {{ service.load_capacity }} тонн</p>
-        <p>Круглосуточно: {% if service.work_24_7 %}Да{% else %}Нет{% endif %}</p>
-    {% endif %}
+                {% if service.load_capacity %}
+                    <section class="service-detail__block">
+                        <h2 class="service-detail__heading">Эвакуатор</h2>
+                        <ul class="service-detail__facts">
+                            <li><span>Грузоподъёмность</span> {{ service.load_capacity }} т</li>
+                            <li><span>Круглосуточно</span> {% if service.work_24_7 %}Да{% else %}Нет{% endif %}</li>
+                        </ul>
+                    </section>
+                {% endif %}
 
-    {% if show_admin_actions %}
-        <p class="service-admin-actions">
-            <a href="{% url 'homepage:car_service_edit' service.pk %}">Редактировать</a>
-            &nbsp;|&nbsp;
-            <a href="{% url 'homepage:car_service_delete' service.pk %}">Удалить</a>
-        </p>
-    {% endif %}
+                {% if service.tags.all %}
+                    <section class="service-detail__block">
+                        <h2 class="service-detail__heading">Теги</h2>
+                        <div class="service-card__tags">
+                            {% for tag in service.tags.all %}
+                                <a class="service-card__tag" href="{% url 'homepage:tag_detail' tag.slug %}">{{ tag.name }}</a>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+            </div>
+        </div>
 
-    <p><a href="{% url 'homepage:index' %}">На главную</a></p>
+        {% include 'includes/service_comments.html' %}
+
+        <footer class="service-detail__footer">
+            {% include 'includes/service_actions.html' %}
+            <a class="btn-secondary" href="{% url 'homepage:index' %}">← На главную</a>
+        </footer>
+    </article>
 {% endblock %}

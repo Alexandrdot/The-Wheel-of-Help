@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.urls import reverse
 
@@ -23,6 +26,14 @@ class BaseService(models.Model):
     time_create = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
     time_update = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
     is_published = models.BooleanField(choices=Status.choices, default=Status.DRAFT, verbose_name="Статус")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='%(class)s_authored',
+        null=True,
+        blank=True,
+        verbose_name='Автор',
+    )
     
     objects = models.Manager()
     published = PublishedManager()
@@ -33,6 +44,12 @@ class BaseService(models.Model):
     
     def __str__(self):
         return self.title
+
+    def change_permission(self):
+        return f'{self._meta.app_label}.change_{self._meta.model_name}'
+
+    def delete_permission(self):
+        return f'{self._meta.app_label}.delete_{self._meta.model_name}'
 
 
 class Category(models.Model):
@@ -99,6 +116,12 @@ class CarService(BaseService):
     def get_absolute_url(self):
         return reverse('homepage:car_service_detail', kwargs={'service_slug': self.slug})
 
+    def get_edit_url(self):
+        return reverse('homepage:car_service_edit', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse('homepage:car_service_delete', kwargs={'pk': self.pk})
+
 
 class TireService(BaseService):
     wheel_size_from = models.IntegerField(default=13, verbose_name="Размер шин от")
@@ -116,6 +139,12 @@ class TireService(BaseService):
     def get_absolute_url(self):
         return reverse('homepage:tire_service_detail', kwargs={'service_slug': self.slug})
 
+    def get_edit_url(self):
+        return reverse('homepage:tire_service_edit', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse('homepage:tire_service_delete', kwargs={'pk': self.pk})
+
 
 class TowTruck(BaseService):
     load_capacity = models.IntegerField(default=2, verbose_name="Грузоподъемность (тонн)")
@@ -131,3 +160,66 @@ class TowTruck(BaseService):
     
     def get_absolute_url(self):
         return reverse('homepage:tow_truck_detail', kwargs={'service_slug': self.slug})
+
+    def get_edit_url(self):
+        return reverse('homepage:tow_truck_edit', kwargs={'pk': self.pk})
+
+    def get_delete_url(self):
+        return reverse('homepage:tow_truck_delete', kwargs={'pk': self.pk})
+
+
+class Comment(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='service_comments',
+        verbose_name='Автор',
+    )
+    text = models.TextField(verbose_name='Текст')
+    time_create = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ['-time_create']
+
+    def __str__(self):
+        return f'{self.author}: {self.text[:40]}'
+
+
+class ServiceReaction(models.Model):
+    LIKE = 1
+    DISLIKE = -1
+    VALUE_CHOICES = (
+        (LIKE, 'Нравится'),
+        (DISLIKE, 'Не нравится'),
+    )
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='service_reactions',
+        verbose_name='Пользователь',
+    )
+    value = models.SmallIntegerField(choices=VALUE_CHOICES, verbose_name='Оценка')
+    time_create = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+
+    class Meta:
+        verbose_name = 'Реакция'
+        verbose_name_plural = 'Реакции'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'content_type', 'object_id'],
+                name='unique_user_service_reaction',
+            ),
+        ]
+
+    def __str__(self):
+        label = 'лайк' if self.value == self.LIKE else 'дизлайк'
+        return f'{self.user} — {label}'

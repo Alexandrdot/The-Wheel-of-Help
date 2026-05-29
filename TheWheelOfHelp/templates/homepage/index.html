@@ -1,38 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{{ title }}</h1>
-    
-    {% if current_rating %}
-        <div class="filter-info">
-            <p>Показаны услуги с рейтингом {{ current_rating }}+ 
-               <a href="?" class="clear-filter">✖ Сбросить фильтр</a>
+    <header class="page-header">
+        <h1 class="page-title">{{ title }}</h1>
+        {% if current_rating %}
+            <p class="page-notice">
+                Показаны услуги с рейтингом {{ current_rating }} и выше.
+                <a href="?" class="page-notice__link">Сбросить фильтр</a>
             </p>
-        </div>
-    {% endif %}
-    
-    <ul class="list-articles">
+        {% endif %}
+    </header>
+
+    <div class="services-list">
         {% for service in page_obj %}
-            <li>
-                 <!-- Добавьте эту строку для отображения картинки -->
-                {% if service.image %}
-                    <img src="{{ service.image.url }}" alt="{{ service.title }}" style="width: 100px; float: left; margin-right: 10px;">
-                {% endif %}
-                <div class="article-panel">
-                    <p class="first">Категория: {{ service.category.name }}</p>
-                    <p class="last">Рейтинг: {{ service.rating }} ⭐</p>
-                </div>
-                <h2>{{ service.title }}</h2>
-                <p><strong>Адрес:</strong> {{ service.address }}</p>
-                <p><strong>Телефон:</strong> {{ service.phone }}</p>
-                <p>{{ service.description|truncatewords:30 }}</p>
-                <div class="clear"></div>
-                <p class="link-read-post"><a href="{{ service.get_absolute_url }}">Подробнее</a></p>
-            </li>
+            {% include 'includes/service_card.html' with service=service show_author=True %}
         {% empty %}
-            <li>Нет услуг с таким рейтингом.</li>
+            <p class="services-empty">Нет услуг с выбранными параметрами.</p>
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}
 
 {% block pagination %}

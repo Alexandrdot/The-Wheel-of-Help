@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-page">
+    <header class="page-header">
+        <h1 class="page-title">{{ title }}</h1>
+        {% if service_type_label %}
+            <p class="form-page__type">Тип: <strong>{{ service_type_label }}</strong></p>
+        {% endif %}
+    </header>
+
+    <form method="post" enctype="multipart/form-data" class="service-form" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="form-alert form-alert--error">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <section class="form-panel">
+            <h2 class="form-panel__title">Основное</h2>
+            <div class="form-panel__grid">
+                {% for field in form %}
+                    {% if field.name == 'title' or field.name == 'slug' or field.name == 'category' or field.name == 'is_published' %}
+                        {% include 'includes/form_field.html' with field=field %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="form-panel">
+            <h2 class="form-panel__title">Описание</h2>
+            <div class="form-panel__grid">
+                {% for field in form %}
+                    {% if field.name == 'description' or field.name == 'rating' %}
+                        {% include 'includes/form_field.html' with field=field %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="form-panel">
+            <h2 class="form-panel__title">Контакты и адрес</h2>
+            <div class="form-panel__grid">
+                {% for field in form %}
+                    {% if field.name == 'address' or field.name == 'phone' or field.name == 'work_time' %}
+                        {% include 'includes/form_field.html' with field=field %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        {% if 'specialization' in form.fields or 'wheel_size_from' in form.fields or 'load_capacity' in form.fields %}
+            <section class="form-panel">
+                <h2 class="form-panel__title">Параметры услуги</h2>
+                <div class="form-panel__grid form-panel__grid--2">
+                    {% for field in form %}
+                        {% if field.name == 'specialization' or field.name == 'diagnostic_available' or field.name == 'wheel_size_from' or field.name == 'wheel_size_to' or field.name == 'tire_storage' or field.name == 'load_capacity' or field.name == 'work_24_7' %}
+                            {% include 'includes/form_field.html' with field=field %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        <section class="form-panel">
+            <h2 class="form-panel__title">Дополнительно</h2>
+            <div class="form-panel__grid">
+                {% for field in form %}
+                    {% if field.name == 'tags' or field.name == 'image' %}
+                        {% include 'includes/form_field.html' with field=field %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% if is_edit and form.instance.image %}
+                <p class="form-panel__preview-label">Текущее изображение</p>
+                <img class="form-panel__preview" src="{{ form.instance.image.url }}" alt="Текущее фото">
+            {% endif %}
+        </section>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                {% if is_edit %}Сохранить изменения{% else %}Добавить услугу{% endif %}
+            </button>
+            <a class="btn-secondary" href="{% url 'homepage:index' %}">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

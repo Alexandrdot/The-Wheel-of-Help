@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-page auth-page">
+    <div class="auth-card auth-card--wide">
+        <header class="page-header page-header--center">
+            <h1 class="page-title">Регистрация</h1>
+            <p class="form-page__lead">Создайте аккаунт для добавления и управления услугами</p>
+        </header>
+
+        <form method="post" class="service-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}" />
+
+            {% if form.non_field_errors %}
+                <div class="form-alert form-alert--error">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <section class="form-panel">
+                <h2 class="form-panel__title">Учётная запись</h2>
+                <div class="form-panel__grid form-panel__grid--2">
+                    {% include 'includes/form_field.html' with field=form.username %}
+                    {% include 'includes/form_field.html' with field=form.email %}
+                </div>
+            </section>
+
+            <section class="form-panel">
+                <h2 class="form-panel__title">Личные данные</h2>
+                <div class="form-panel__grid form-panel__grid--2">
+                    {% include 'includes/form_field.html' with field=form.first_name %}
+                    {% include 'includes/form_field.html' with field=form.last_name %}
+                </div>
+            </section>
+
+            <section class="form-panel">
+                <h2 class="form-panel__title">Пароль</h2>
+                <div class="form-panel__grid form-panel__grid--2">
+                    {% include 'includes/form_field.html' with field=form.password1 %}
+                    {% include 'includes/form_field.html' with field=form.password2 %}
+                </div>
+                <p class="form-field__hint form-field__hint--block">Минимум 8 символов. Не используйте простые пароли.</p>
+            </section>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Зарегистрироваться</button>
+                <a class="btn-secondary" href="{% url 'users:login' %}">Уже есть аккаунт</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

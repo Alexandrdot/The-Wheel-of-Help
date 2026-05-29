@@ -1,12 +1,36 @@
-<div class="header">
-    <ul class="mainmenu">
-        <li><a href="{% url 'homepage:contact' %}">Контакты</a></li>
-        <li><a href="{% url 'homepage:index' %}">Главная</a></li>
-        <li><a href="{% url 'homepage:category_detail' 'tech-station' %}">СТО</a></li>
-        <li><a href="{% url 'homepage:category_detail' 'evacuators' %}">Эвакуаторы</a></li>
-        <li><a href="{% url 'homepage:category_detail' 'tire-services' %}">Шиномонтаж</a></li>
-        <li><a href="{% url 'homepage:demo_orm' %}">ORM Demo</a></li>
-        <li><a href="#">О проекте</a></li>
-        <li class="last"><a href="#">Войти</a></li>
-    </ul>
-</div>
+<header class="header">
+    <div class="header__inner">
+        <a class="header-brand" href="{% url 'homepage:index' %}">TheWheelOfHelp</a>
+
+        <nav class="header-nav" aria-label="Главное меню">
+            <ul class="header-nav__list">
+                {% for m in mainmenu %}
+                    <li><a href="{{ m.url }}">{{ m.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        <div class="header-account">
+            {% if user.is_authenticated %}
+                <a class="header-profile" href="{% url 'users:profile' %}">
+                    {% if user.photo %}
+                        <img class="header-profile__avatar" src="{{ user.photo.url }}" alt="{{ user.username }}">
+                    {% else %}
+                        <img class="header-profile__avatar" src="{{ default_user_image }}" alt="{{ user.username }}">
+                    {% endif %}
+                    <span class="header-profile__name">{{ user.username }}</span>
+                </a>
+                <form class="header-logout" method="post" action="{% url 'users:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="header-logout__btn" title="Выйти">Выйти</button>
+                </form>
+            {% else %}
+                <div class="header-guest">
+                    <a href="{% url 'users:login' %}">Войти</a>
+                    <span class="header-guest__sep">|</span>
+                    <a href="{% url 'users:register' %}">Регистрация</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</header>

@@ -1,0 +1,56 @@
+{% load homepage_tags %}
+<div class="service-reactions{% if compact %} service-reactions--compact{% endif %}">
+    {% if show_comments_count %}
+        <a class="service-reactions__comments" href="{{ service.get_absolute_url }}#comments" title="Комментарии">
+            <span class="service-reactions__icon" aria-hidden="true">💬</span>
+            <span class="service-reactions__num">{{ service.engagement.comments_count }}</span>
+        </a>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <form class="service-reactions__form" method="post" action="{% url 'homepage:service_react' %}">
+            {% csrf_token %}
+            <input type="hidden" name="content_type_id" value="{{ service|content_type_id }}">
+            <input type="hidden" name="object_id" value="{{ service.pk }}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button
+                type="submit"
+                name="value"
+                value="like"
+                class="service-reactions__btn service-reactions__btn--like{% if service.engagement.user_vote == 1 %} is-active{% endif %}"
+                title="Нравится"
+                aria-pressed="{% if service.engagement.user_vote == 1 %}true{% else %}false{% endif %}"
+            >
+                <span class="service-reactions__icon" aria-hidden="true">👍</span>
+                <span class="service-reactions__num">{{ service.engagement.likes }}</span>
+            </button>
+            <button
+                type="submit"
+                name="value"
+                value="dislike"
+                class="service-reactions__btn service-reactions__btn--dislike{% if service.engagement.user_vote == -1 %} is-active{% endif %}"
+                title="Не нравится"
+                aria-pressed="{% if service.engagement.user_vote == -1 %}true{% else %}false{% endif %}"
+            >
+                <span class="service-reactions__icon" aria-hidden="true">👎</span>
+                <span class="service-reactions__num">{{ service.engagement.dislikes }}</span>
+            </button>
+        </form>
+    {% else %}
+        <div class="service-reactions__form service-reactions__form--readonly" aria-label="Оценки">
+            <span class="service-reactions__btn service-reactions__btn--like" title="Нравится">
+                <span class="service-reactions__icon" aria-hidden="true">👍</span>
+                <span class="service-reactions__num">{{ service.engagement.likes }}</span>
+            </span>
+            <span class="service-reactions__btn service-reactions__btn--dislike" title="Не нравится">
+                <span class="service-reactions__icon" aria-hidden="true">👎</span>
+                <span class="service-reactions__num">{{ service.engagement.dislikes }}</span>
+            </span>
+        </div>
+        {% if show_login_hint %}
+            <p class="service-reactions__hint">
+                <a href="{% url 'users:login' %}?next={{ request.get_full_path|urlencode }}">Войдите</a>, чтобы оценить
+            </p>
+        {% endif %}
+    {% endif %}
+</div>
