@@ -54,7 +54,6 @@
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'homepage:add_service' %}">Добавить услугу</a></li>
                     <li><a href="{% url 'users:profile' %}">Профиль</a></li>
-                    <li><a href="{% url 'homepage:upload' %}">Загрузка файла</a></li>
                 {% else %}
                     <li><a href="{% url 'users:login' %}?next={% url 'homepage:add_service' %}">Войти</a></li>
                     <li><a href="{% url 'users:register' %}">Регистрация</a></li>

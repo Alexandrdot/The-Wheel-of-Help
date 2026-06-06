@@ -1,7 +1,3 @@
-import os
-import uuid
-
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -12,7 +8,7 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView
 
 from .constants import CATEGORY_SLUG_STO, CATEGORY_SLUG_TIRE, CATEGORY_SLUG_TOW
-from .forms import CarServiceForm, ContactForm, TireServiceForm, TowTruckForm, UploadFileForm
+from .forms import CarServiceForm, ContactForm, TireServiceForm, TowTruckForm
 from .interactions import set_reaction
 from .mixins import (
     ServiceDeletePermissionMixin,
@@ -392,37 +388,41 @@ class TowTruckDeleteView(ServiceDeletePermissionMixin, DataMixin, DeleteView):
         )
 
 
-def handle_uploaded_file(f):
-    ext = ''
-    if '.' in f.name:
-        ext = f.name[f.name.rindex('.'):]
-        name = f.name[: f.name.rindex('.')]
-    else:
-        name = f.name
 
-    unique_name = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
-    upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
-    os.makedirs(upload_dir, exist_ok=True)
-    file_path = os.path.join(upload_dir, unique_name)
+class SearchView(ServicesListEngagementMixin, DataMixin, ListView):
+    """Поиск по названию и адресу среди всех опубликованных услуг."""
 
-    with open(file_path, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-    return unique_name
+    template_name = 'homepage/search_results.html'
+
+    def get(self, request, *args, **kwargs):
+        if not request.GET.get('q', '').strip():
+            return redirect(reverse_lazy('homepage:index'))
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        q = self.request.GET.get('q', '').strip().lower()
+        if not q:
+            return []
+        all_services = (
+            list(CarService.published.select_related('category'))
+            + list(TireService.published.select_related('category'))
+            + list(TowTruck.published.select_related('category'))
+        )
+        services = [
+            s for s in all_services
+            if q in s.title.lower() or q in (s.address or '').lower()
+        ]
+        services.sort(key=lambda x: x.time_create, reverse=True)
+        return services
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        q = self.request.GET.get('q', '').strip()
+        return self.get_mixin_context(
+            context,
+            title=f'Поиск: {q}' if q else 'Поиск',
+            selected_cat_id=0,
+            search_query=q,
+        )
 
 
-class UploadFileView(LoginRequiredMixin, DataMixin, View):
-    def get(self, request):
-        form = UploadFileForm()
-        ctx = self.get_mixin_context({'form': form}, title='Загрузка файла', selected_cat_id=0)
-        return render(request, 'homepage/upload.html', ctx)
-
-    def post(self, request):
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded_file = request.FILES['file']
-            filename = handle_uploaded_file(uploaded_file)
-            ctx = self.get_mixin_context({'filename': filename}, title='Файл загружен', selected_cat_id=0)
-            return render(request, 'homepage/upload_success.html', ctx)
-        ctx = self.get_mixin_context({'form': form}, title='Загрузка файла', selected_cat_id=0)
-        return render(request, 'homepage/upload.html', ctx)

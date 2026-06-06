@@ -140,7 +140,7 @@ LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'homepage:index'
 LOGOUT_REDIRECT_URL = 'homepage:index'
 
-DEFAULT_USER_IMAGE = MEDIA_URL + 'users/default.png'
+DEFAULT_USER_IMAGE = '/static/img/default-avatar.svg'
 
 # Почта: по умолчанию консоль (для разработки).
 # Для реальной отправки задайте переменные окружения EMAIL_HOST, EMAIL_PORT и т.д.

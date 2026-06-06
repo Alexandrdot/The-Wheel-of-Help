@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from .constants import CATEGORY_SLUG_STO, CATEGORY_SLUG_TIRE, CATEGORY_SLUG_TOW
-from .models import CarService, Category, Status, Tag, TireService, TowTruck
+from .models import CarService, Category, Status, TireService, TowTruck
 
 
 class CommentForm(forms.Form):
@@ -235,10 +235,3 @@ class TowTruckForm(BaseServiceForm):
             'load_capacity': forms.NumberInput(attrs={'class': 'form-input form-input--short'}),
             'work_24_7': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
-
-
-class UploadFileForm(forms.Form):
-    file = forms.FileField(
-        label="Выберите файл",
-        widget=forms.FileInput(attrs={'class': 'form-file'}),
-    )

@@ -3,21 +3,21 @@
     <ul>
         {% if page_obj.has_previous %}
             <li class="page-num">
-                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}">&lt;</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Предыдущая">&#8592;</a>
             </li>
         {% endif %}
         {% for p in paginator.page_range %}
             {% if page_obj.number == p %}
-                <li class="page-num page-num-selected">{{ p }}</li>
+                <li class="page-num-selected" aria-current="page">{{ p }}</li>
             {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
                 <li class="page-num">
-                    <a href="?page={{ p }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}">{{ p }}</a>
+                    <a href="?page={{ p }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ p }}</a>
                 </li>
             {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
             <li class="page-num">
-                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}">&gt;</a>
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.rating %}&rating={{ request.GET.rating }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" aria-label="Следующая">&#8594;</a>
             </li>
         {% endif %}
     </ul>

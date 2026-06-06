@@ -1,8 +1,0 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<h1>Файл успешно загружен!</h1>
-<p>Имя файла: {{ filename }}</p>
-<p><a href="{% url 'homepage:upload' %}">Загрузить еще</a></p>
-<p><a href="{% url 'homepage:index' %}">← На главную</a></p>
-{% endblock %}

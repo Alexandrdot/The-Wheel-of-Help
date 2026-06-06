@@ -10,6 +10,17 @@
             </ul>
         </nav>
 
+        <form class="header-search" method="get" action="{% url 'homepage:search' %}" role="search">
+            <input class="header-search__input" type="search" name="q" value="{{ request.GET.q|default:'' }}"
+                   placeholder="Поиск услуг..." aria-label="Поиск">
+            <button class="header-search__btn" type="submit" aria-label="Найти">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </button>
+        </form>
+
         <div class="header-account">
             {% if user.is_authenticated %}
                 <a class="header-profile" href="{% url 'users:profile' %}">

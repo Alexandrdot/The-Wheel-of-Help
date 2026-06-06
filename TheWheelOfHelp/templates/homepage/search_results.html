@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header class="page-header">
+    <h1 class="page-title">
+        {% if search_query %}
+            Результаты поиска: «{{ search_query }}»
+        {% else %}
+            Поиск
+        {% endif %}
+    </h1>
+    {% if search_query %}
+        <p class="page-notice">
+            Найдено {{ page_obj.paginator.count }} услуг по запросу «{{ search_query }}».
+            <a href="{% url 'homepage:index' %}" class="page-notice__link">На главную</a>
+        </p>
+    {% endif %}
+</header>
+
+{% if not search_query %}
+    <p class="services-empty">Введите запрос в строку поиска.</p>
+{% else %}
+    <div class="services-list">
+        {% for service in page_obj %}
+            {% include 'includes/service_card.html' with service=service show_author=True %}
+        {% empty %}
+            <p class="services-empty">По запросу «{{ search_query }}» ничего не найдено.</p>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block pagination %}
+    {% include 'includes/pagination_nav.html' %}
+{% endblock %}

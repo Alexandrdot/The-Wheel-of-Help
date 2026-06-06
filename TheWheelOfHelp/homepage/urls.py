@@ -29,7 +29,8 @@ urlpatterns = [
 
     path('react/', views.ServiceReactionView.as_view(), name='service_react'),
 
+    path('search/', views.SearchView.as_view(), name='search'),
+
     path('contact/', views.ContactView.as_view(), name='contact'),
 
-    path('upload/', views.UploadFileView.as_view(), name='upload'),
 ]
